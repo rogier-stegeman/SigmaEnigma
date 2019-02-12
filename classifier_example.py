@@ -2,6 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import svm, metrics
 from matplotlib.colors import ListedColormap
+"""
+Author: T. Todt
+"""
+
 
 ####################################
 
