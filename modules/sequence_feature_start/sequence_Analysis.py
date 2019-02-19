@@ -118,20 +118,23 @@ def csv_to_pandad_df():
 def machine_learn(df):
     seed = 7
     y = df.iloc[:,-1]
-    x = df.loc[:, df.columns != 'sigma']
+    X = df.loc[:, df.columns != 'sigma']
+    X = df.loc[:, df.columns != 'name']
     model = RandomForestClassifier(n_jobs=-1, n_estimators=1800, max_features=0.4, max_depth=46, max_leaf_nodes=40,
                            min_samples_leaf=0.05, min_samples_split=0.2)
-    #print(x)
+    #print(X)
     #print(y)
-    df.set_index('name')
+    #df.set_index('name')
+
     enc = OneHotEncoder(handle_unknown='ignore')
-    enc.fit(x)
-    print(enc.categories_)
-   # print(enc.transform)
-    le = preprocessing.LabelEncoder()
-    le.fit(y)
+    enc.fit(X)
+   # print(enc.categories_)
+    print(enc.transform)
+   # le = preprocessing.LabelEncoder()
+    #le.fit(y)
     '''
-    model.fit(x,y)
+    
+    model.fit(X,y)
     kfold = model_selection.KFold(n_splits=4, random_state=seed)
     scoring = {'acc': 'accuracy',
                'f1': 'f1',
