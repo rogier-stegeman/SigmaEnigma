@@ -16,9 +16,9 @@ from sklearn import preprocessing
 
 
 def main():
-    #get_data_excel()
+    get_data_excel()
     pandas_df = csv_to_pandad_df()
-    machine_learn(pandas_df)
+    #machine_learn(pandas_df)
 
 
 
@@ -74,6 +74,7 @@ def write_to_excel(base_list):
 def csv_to_pandad_df():
     try:
         df = pd.read_csv('data/sigma_data.csv')
+        print(df)
         return df
     except:
         print()
@@ -82,6 +83,7 @@ def csv_to_pandad_df():
 def machine_learn(df):
     seed = 7
     y = df.iloc[:,-1]
+    print(y)
     cols = [col for col in df.columns if col not in ['name', 'sigma']]
     X = df[cols]
     model = RandomForestClassifier(n_jobs=-1, n_estimators=1800, max_features=0.4, max_depth=46, max_leaf_nodes=40,
@@ -105,14 +107,14 @@ def machine_learn(df):
     #print(  integer_encoded_feature)
     X = integer_encoded_feature
     y = integer_encoded_label.ravel()
-    print(X)
+    #print(y)
 
 
     model.fit(X,y)
 
     kfold = model_selection.KFold(n_splits=4, random_state=seed)
-    scoring = {'acc': 'accuracy',
-               'f1': 'f1',
+    scoring = {
+               'f1_micro': 'f1_micro',
                'recall': 'recall',
                'avg_prec': 'average_precision',
                }
