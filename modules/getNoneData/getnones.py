@@ -9,7 +9,8 @@ def main():
                 seq = b[-1]
                 if len(seq) > 80:
                     counter += 1
-                    if counter % 3 == 0 and counter <= 1294*3:
+                    #if counter % 3 == 0 and counter <= 1294*3:
+                    if counter <= 1894:
                     # if counter <= 1294:
                         l = int(len(seq)/2)
                         if counter % 2 == 0:

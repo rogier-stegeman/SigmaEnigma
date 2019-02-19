@@ -14,19 +14,14 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 from sklearn import preprocessing
 
+"""
+This module creates the randomforest classifier model and predicts the existence of sigma binding sites.
+"""
 
 def main():
     get_data_excel()
     pandas_df = csv_to_pandad_df()
     machine_learn(pandas_df)
-
-
-
-def vectorizeSequence(seq):
-    # the order of the letters is not arbitrary.
-    # Flip the matrix up-down and left-right for reverse compliment
-    ltrdict = {'a':[1,0,0,0],'c':[0,1,0,0],'g':[0,0,1,0],'t':[0,0,0,1], 'n':[0,0,0,0]}
-    return np.array([ltrdict[x] for x in seq])
 
 
 def get_data_excel():
