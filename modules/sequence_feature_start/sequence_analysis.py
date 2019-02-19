@@ -18,15 +18,8 @@ from sklearn import preprocessing
 def main():
     get_data_excel()
     pandas_df = csv_to_pandad_df()
-    #machine_learn(pandas_df)
+    machine_learn(pandas_df)
 
-
-
-def vectorizeSequence(seq):
-    # the order of the letters is not arbitrary.
-    # Flip the matrix up-down and left-right for reverse compliment
-    ltrdict = {'a':[1,0,0,0],'c':[0,1,0,0],'g':[0,0,1,0],'t':[0,0,0,1], 'n':[0,0,0,0]}
-    return np.array([ltrdict[x] for x in seq])
 
 
 def get_data_excel():
@@ -84,13 +77,11 @@ def csv_to_pandad_df():
 def machine_learn(df):
     seed = 7
     y = df.iloc[:,-1]
-    print(y)
     cols = [col for col in df.columns if col not in ['name', 'sigma']]
     X = df[cols]
     model = RandomForestClassifier(n_jobs=-1, n_estimators=1800, max_features=0.4, max_depth=46, max_leaf_nodes=40,
                            min_samples_leaf=0.05, min_samples_split=0.2)
     #print(X)
-    print(y)
     #df.set_index('name')
     label_encoder = LabelEncoder()
     integer_encoded_label = label_encoder.fit_transform(y)
@@ -114,10 +105,9 @@ def machine_learn(df):
     model.fit(X,y)
 
     kfold = model_selection.KFold(n_splits=4, random_state=seed)
-    scoring = {
+    scoring = {'accuracy':'accuracy',
                'f1_micro': 'f1_micro',
-               'recall': 'recall',
-               'avg_prec': 'average_precision',
+               'recall_micro': 'recall_micro',
                }
 
     scores = cross_validate(model, X, y, cv=kfold, scoring=scoring,
@@ -125,17 +115,17 @@ def machine_learn(df):
     y_pred = model_selection.cross_val_predict(model, X, y, cv=kfold)
     for k, v in scores.items():
         print(k, v)
-    y2 = y.values
+    y2 = y
     confusion = confusion_matrix(y2, y_pred)
     name = "randomforestclassifier"
     visualize_confusion_matrix(confusion, name)
 
 
-def visualize_confusion_matrix(self, cm, name):
+def visualize_confusion_matrix( cm, name):
     plt.clf()
     plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Wistia)
     classNames = ['Negative', 'Positive']
-    plt.title('Hold or sell classificatie')
+    plt.title('Sigma')
     plt.ylabel(name)
     plt.xlabel('Predicted label')
     tick_marks = np.arange(len(classNames))
@@ -145,6 +135,7 @@ def visualize_confusion_matrix(self, cm, name):
     for i in range(2):
         for j in range(2):
             plt.text(j, i, str(s[i][j]) + " = " + str(cm[i][j]))
+    plt.show()
     
 
 if __name__ == "__main__":
