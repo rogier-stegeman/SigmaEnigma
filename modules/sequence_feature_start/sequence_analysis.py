@@ -118,32 +118,34 @@ def csv_to_pandad_df():
 def machine_learn(df):
     seed = 7
     y = df.iloc[:,-1]
-    #X = df.iloc[:, df.columns != all(['sigma','name'])]
-    X = df.iloc[:, all(df.columns != 'name' and df.columns != 'sigma')]
+    cols = [col for col in df.columns if col not in ['name', 'sigma']]
+    X = df[cols]
     model = RandomForestClassifier(n_jobs=-1, n_estimators=1800, max_features=0.4, max_depth=46, max_leaf_nodes=40,
                            min_samples_leaf=0.05, min_samples_split=0.2)
     #print(X)
     #print(y)
     #df.set_index('name')
-    print(X)
     label_encoder = LabelEncoder()
     integer_encoded_label = label_encoder.fit_transform(y)
     integer_encoded_label = integer_encoded_label.reshape(len(integer_encoded_label), 1)
-    print(integer_encoded_label)
+    #print(integer_encoded_label)
 
-    feature_encoder = LabelEncoder()
-    integer_encoded_feature = feature_encoder.fit_transform(X)
+    onehot_encoder = OneHotEncoder(sparse=False)
+    integer_encoded_feature = onehot_encoder.fit_transform(X)
 
     # one hot the sequence
-    onehot_encoder = OneHotEncoder(sparse=False)
+
     # reshape because that's what OneHotEncoder likes
-    integer_encoded_feature = integer_encoded_feature.reshape(len(integer_encoded_feature), 1)
-    onehot_encoded_seq = onehot_encoder.fit_transform(integer_encoded_feature)
-    print( onehot_encoded_seq)
-
-
+    #integer_encoded_feature = integer_encoded_feature.reshape(len(integer_encoded_feature), 1)
+    #onehot_encoded_seq = onehot_encoder.fit_transform(integer_encoded_feature)
+    #print(  integer_encoded_feature)
+    X = integer_encoded_feature
+    y = integer_encoded_label.ravel()
+    print(X)
     
-    model.fit( integer_encoded_feature,integer_encoded_label)
+
+    model.fit(X,y)
+
     kfold = model_selection.KFold(n_splits=4, random_state=seed)
     scoring = {'acc': 'accuracy',
                'f1': 'f1',
