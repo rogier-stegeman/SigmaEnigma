@@ -118,23 +118,32 @@ def csv_to_pandad_df():
 def machine_learn(df):
     seed = 7
     y = df.iloc[:,-1]
-    X = df.loc[:, df.columns != 'sigma']
-    X = df.loc[:, df.columns != 'name']
+    #X = df.iloc[:, df.columns != all(['sigma','name'])]
+    X = df.iloc[:, all(df.columns != 'name' and df.columns != 'sigma')]
     model = RandomForestClassifier(n_jobs=-1, n_estimators=1800, max_features=0.4, max_depth=46, max_leaf_nodes=40,
                            min_samples_leaf=0.05, min_samples_split=0.2)
     #print(X)
     #print(y)
     #df.set_index('name')
+    print(X)
+    label_encoder = LabelEncoder()
+    integer_encoded_label = label_encoder.fit_transform(y)
+    integer_encoded_label = integer_encoded_label.reshape(len(integer_encoded_label), 1)
+    print(integer_encoded_label)
 
-    enc = OneHotEncoder(handle_unknown='ignore')
-    enc.fit(X)
-   # print(enc.categories_)
-    print(enc.transform)
-   # le = preprocessing.LabelEncoder()
-    #le.fit(y)
-    '''
+    feature_encoder = LabelEncoder()
+    integer_encoded_feature = feature_encoder.fit_transform(X)
+
+    # one hot the sequence
+    onehot_encoder = OneHotEncoder(sparse=False)
+    # reshape because that's what OneHotEncoder likes
+    integer_encoded_feature = integer_encoded_feature.reshape(len(integer_encoded_feature), 1)
+    onehot_encoded_seq = onehot_encoder.fit_transform(integer_encoded_feature)
+    print( onehot_encoded_seq)
+
+
     
-    model.fit(X,y)
+    model.fit( integer_encoded_feature,integer_encoded_label)
     kfold = model_selection.KFold(n_splits=4, random_state=seed)
     scoring = {'acc': 'accuracy',
                'f1': 'f1',
@@ -167,7 +176,7 @@ def visualize_confusion_matrix(self, cm, name):
         for j in range(2):
             plt.text(j, i, str(s[i][j]) + " = " + str(cm[i][j]))
     
-    '''
+
 
 
 if __name__ == "__main__":
