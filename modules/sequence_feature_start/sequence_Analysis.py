@@ -3,11 +3,22 @@ import numpy as np
 import openpyxl
 import csv
 import os
-
+from sklearn.ensemble import RandomForestClassifier
+from sklearn import model_selection
+from sklearn.model_selection import cross_validate
+from sklearn.metrics import confusion_matrix
+import matplotlib
+matplotlib.use('Qt5Agg')
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder
+from sklearn import preprocessing
 
 def main():
-    csv_to_pandad_df()
-    get_data_excel()
+    #get_data_excel()
+    pandas_df = csv_to_pandad_df()
+    machine_learn(pandas_df)
+
 
 
 def vectorizeSequence(seq):
@@ -99,16 +110,61 @@ def write_to_excel(base_list):
 def csv_to_pandad_df():
     try:
         df = pd.read_csv('data/sigma_data.csv')
-        # machine_learn(df)
+        return df
     except:
         print()
 
 
 def machine_learn(df):
+    seed = 7
     y = df.iloc[:,-1]
-    x = df.drop(df.columns[len(df.columns)-1], axis=1, inplace=True)
+    x = df.loc[:, df.columns != 'sigma']
     model = RandomForestClassifier(n_jobs=-1, n_estimators=1800, max_features=0.4, max_depth=46, max_leaf_nodes=40,
                            min_samples_leaf=0.05, min_samples_split=0.2)
+    #print(x)
+    #print(y)
+    df.set_index('name')
+    enc = OneHotEncoder(handle_unknown='ignore')
+    enc.fit(x)
+    print(enc.categories_)
+   # print(enc.transform)
+    le = preprocessing.LabelEncoder()
+    le.fit(y)
+    '''
+    model.fit(x,y)
+    kfold = model_selection.KFold(n_splits=4, random_state=seed)
+    scoring = {'acc': 'accuracy',
+               'f1': 'f1',
+               'recall': 'recall',
+               'avg_prec': 'average_precision',
+               }
+
+    scores = cross_validate(model, X, y, cv=kfold, scoring=scoring,
+                            return_train_score=False)
+    y_pred = model_selection.cross_val_predict(model, X, y, cv=kfold)
+    for k, v in scores.items():
+        print(k, v)
+    y2 = y.values
+    confusion = confusion_matrix(y2, y_pred)
+    name = "randomforestclassifier"
+    visualize_confusion_matrix(confusion, name)
+
+def visualize_confusion_matrix(self, cm, name):
+    plt.clf()
+    plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Wistia)
+    classNames = ['Negative', 'Positive']
+    plt.title('Hold or sell classificatie')
+    plt.ylabel(name)
+    plt.xlabel('Predicted label')
+    tick_marks = np.arange(len(classNames))
+    plt.xticks(tick_marks, classNames, rotation=45)
+    plt.yticks(tick_marks, classNames)
+    s = [['TN', 'FP'], ['FN', 'TP']]
+    for i in range(2):
+        for j in range(2):
+            plt.text(j, i, str(s[i][j]) + " = " + str(cm[i][j]))
+    
+    '''
 
 
 if __name__ == "__main__":
