@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 from sklearn import preprocessing
+from sklearn.utils import shuffle
 
 
 def main():
@@ -24,7 +25,7 @@ def main():
 
 def get_data_excel():
     """Load the data from an Excel worksheet"""
-    book = openpyxl.load_workbook('data/datasetWithNone.xlsx', data_only=True)
+    book = openpyxl.load_workbook('data/datasetWithNoneSigma70.xlsx', data_only=True)
     df = pd.DataFrame()
     sheet = book["Sheet1"]
     with open('data/sigma_data.csv', 'w') as csvfile:
@@ -99,6 +100,8 @@ def machine_learn(df):
     #print(  integer_encoded_feature)
     X = integer_encoded_feature
     y = integer_encoded_label.ravel()
+    X = shuffle(X)
+    y = shuffle (y)
     #print(y)
 
 
