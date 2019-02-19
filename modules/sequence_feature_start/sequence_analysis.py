@@ -61,6 +61,7 @@ def get_data_excel():
 
     book.close()
 
+
 def write_to_excel(base_list):
     """Write processed data to csv file for import
     into Excel"""
@@ -89,7 +90,7 @@ def machine_learn(df):
     model = RandomForestClassifier(n_jobs=-1, n_estimators=1800, max_features=0.4, max_depth=46, max_leaf_nodes=40,
                            min_samples_leaf=0.05, min_samples_split=0.2)
     #print(X)
-    #print(y)
+    print(y)
     #df.set_index('name')
     label_encoder = LabelEncoder()
     integer_encoded_label = label_encoder.fit_transform(y)
@@ -129,6 +130,7 @@ def machine_learn(df):
     name = "randomforestclassifier"
     visualize_confusion_matrix(confusion, name)
 
+
 def visualize_confusion_matrix(self, cm, name):
     plt.clf()
     plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Wistia)
@@ -144,8 +146,6 @@ def visualize_confusion_matrix(self, cm, name):
         for j in range(2):
             plt.text(j, i, str(s[i][j]) + " = " + str(cm[i][j]))
     
-
-
 
 if __name__ == "__main__":
     main()
