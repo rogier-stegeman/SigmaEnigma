@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 from sklearn import preprocessing
+from sklearn.utils import shuffle
 
 """
 This module creates the randomforest classifier model and predicts the existence of sigma binding sites.
@@ -26,7 +27,7 @@ def main():
 
 def get_data_excel():
     """Load the data from an Excel worksheet"""
-    book = openpyxl.load_workbook('data/datasetWithNone.xlsx', data_only=True)
+    book = openpyxl.load_workbook('data/datasetWithNoneSigma70.xlsx', data_only=True)
     df = pd.DataFrame()
     sheet = book["Sheet1"]
     with open('data/sigma_data.csv', 'w') as csvfile:
@@ -70,6 +71,7 @@ def write_to_excel(base_list):
 def csv_to_pandad_df():
     try:
         df = pd.read_csv('data/sigma_data.csv')
+        print(df)
         return df
     except:
         print()
@@ -83,7 +85,6 @@ def machine_learn(df):
     model = RandomForestClassifier(n_jobs=-1, n_estimators=1800, max_features=0.4, max_depth=46, max_leaf_nodes=40,
                            min_samples_leaf=0.05, min_samples_split=0.2)
     #print(X)
-    print(y)
     #df.set_index('name')
     label_encoder = LabelEncoder()
     integer_encoded_label = label_encoder.fit_transform(y)
@@ -101,16 +102,17 @@ def machine_learn(df):
     #print(  integer_encoded_feature)
     X = integer_encoded_feature
     y = integer_encoded_label.ravel()
-    print(X)
+    X = shuffle(X)
+    y = shuffle (y)
+    #print(y)
 
 
     model.fit(X,y)
 
     kfold = model_selection.KFold(n_splits=4, random_state=seed)
-    scoring = {'acc': 'accuracy',
-               'f1': 'f1',
-               'recall': 'recall',
-               'avg_prec': 'average_precision',
+    scoring = {'accuracy':'accuracy',
+               'f1_micro': 'f1_micro',
+               'recall_micro': 'recall_micro',
                }
 
     scores = cross_validate(model, X, y, cv=kfold, scoring=scoring,
@@ -118,17 +120,17 @@ def machine_learn(df):
     y_pred = model_selection.cross_val_predict(model, X, y, cv=kfold)
     for k, v in scores.items():
         print(k, v)
-    y2 = y.values
+    y2 = y
     confusion = confusion_matrix(y2, y_pred)
     name = "randomforestclassifier"
     visualize_confusion_matrix(confusion, name)
 
 
-def visualize_confusion_matrix(self, cm, name):
+def visualize_confusion_matrix( cm, name):
     plt.clf()
     plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Wistia)
     classNames = ['Negative', 'Positive']
-    plt.title('Hold or sell classificatie')
+    plt.title('Sigma')
     plt.ylabel(name)
     plt.xlabel('Predicted label')
     tick_marks = np.arange(len(classNames))
@@ -138,6 +140,7 @@ def visualize_confusion_matrix(self, cm, name):
     for i in range(2):
         for j in range(2):
             plt.text(j, i, str(s[i][j]) + " = " + str(cm[i][j]))
+    plt.show()
     
 
 if __name__ == "__main__":
