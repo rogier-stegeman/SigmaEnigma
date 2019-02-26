@@ -1,5 +1,11 @@
 import re
 
+# Function to get E.coli promotor sigma70 box information
+# Retrun value consist of a list with:
+# 1. Boolean if -35 box was found
+# 2. Boolean if extended -10 box was found
+# 3. Boolean if -10 box was found
+# 4. distance between -35 and (ext)-10 if one of the boxes was not found a 0 is returned
 def boxFinder(seq):
     box10 = findRe(pattern='[TG]A[ACGT]{3}[AT]',seq=seq.upper()[35:60],start=True, add = 35)
     box35 = findRe(pattern='T[GT]{2}[ACGT]{3}',seq=seq.upper()[:35],start=False)
