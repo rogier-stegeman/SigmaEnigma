@@ -24,10 +24,10 @@ def main():
     get_data_excel()
     pandas_df = csv_to_pandad_df()
     X,y = pre_process(pandas_df)
-    print(X)
-    print(y)
-    #models = create_models()
-   # test_multiple_models(models, X, y)
+    #print(X)
+   # print(y)
+    models = create_models()
+    test_multiple_models(models, X, y)
 
    # machine_learn(pandas_df)
 
@@ -117,7 +117,7 @@ def test_multiple_models(models, X, y):
         precicion_results = model_selection.cross_val_score(model, X, y, cv=kfold, scoring="average_precision")
         y_pred = model_selection.cross_val_predict(model, X, y, cv=kfold)
 
-        y2 = y.values
+        y2 = y
         confusion = confusion_matrix(y2, y_pred)
         visualize_confusion_matrix(confusion,name)
         cm.append(confusion)
@@ -141,9 +141,13 @@ def test_multiple_models(models, X, y):
 
 def pre_process(df):
     colsy = [col for col in df.columns if col in ['sigma']]
+    print(colsy)
     colsx = [col for col in df.columns if col not in ['name', 'sigma']]
+    print("he")
     X = df[colsx]
     pre_y = df[colsy]
+    print(X)
+    print(pre_y)
     base_dict = {
         "a": 0,
         "c": 1,
@@ -158,6 +162,7 @@ def pre_process(df):
     integer_encoded_label = label_encoder.fit_transform(pre_y.values.ravel())
     integer_encoded_label = integer_encoded_label.reshape(len(integer_encoded_label), 1)
     y = integer_encoded_label.ravel()
+
 
 
     return X,y
