@@ -3,6 +3,7 @@ import numpy as np
 import openpyxl
 import csv
 import os
+import boxFinder as bF
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import model_selection
 from sklearn.model_selection import cross_validate
@@ -40,7 +41,7 @@ def get_data_excel():
     df = pd.DataFrame()
     sheet = book["Sheet1"]
     with open('data/sigma_data.csv', 'w') as csvfile:
-        csvfile.write("name,{}sigma\n".format("base,"*81))
+        csvfile.write("name,{}sigma,box35,boxExt10,box10,boxDistance\n".format("base,"*81))
     for row in sheet:
         base_list = []
         sigma_list = []
@@ -51,6 +52,7 @@ def get_data_excel():
             sigma_list = sigma.split(",")
         id = row[0].value
         sequence = row[2].value.lower()
+        boxes = bF.boxFinder(sequence)
         for base in sequence:
             base_list.append(base)
         for sigma in sigma_list:
@@ -62,6 +64,10 @@ def get_data_excel():
                 out_list.append(str(id)+"s"+str(sigma[5:]))
             out_list.extend(base_list)
             out_list.append(str(sigma.strip("\n")))
+            out_list.append(boxes[0])
+            out_list.append(boxes[1])
+            out_list.append(boxes[2])
+            out_list.append(boxes[3])
             write_to_excel(out_list)
 
     book.close()
@@ -155,9 +161,10 @@ def pre_process(df):
         "g": 2,
         "t": 3
     }
-    for col in  X.columns :
-        print(col)
-        X[col] = X[col].map(base_dict)
+    for col in X.columns:
+        if not col.startswith("box"):
+            print(col)
+            X[col] = X[col].map(base_dict)
 
     label_encoder = LabelEncoder()
     integer_encoded_label = label_encoder.fit_transform(pre_y.values.ravel())
