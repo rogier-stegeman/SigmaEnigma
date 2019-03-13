@@ -41,14 +41,17 @@ def getdata(datafile):
 
 
 def create_model(X, y, layerset, loss, optimizer, epoch, seed):
-    # create model
+    print("")
+    # Set the seed, instead of using a random one
     numpy.random.seed(seed)
+    # create model
     model = Sequential()
+    # Input layer
     model.add(Dense(81, input_dim=81, activation='relu'))
-    print(layerset)
+    # Hidden layers
     for layer in layerset:
-        print(layer)
         model.add(Dense(layer[0], activation=layer[1]))
+    # Output layer
     model.add(Dense(1, activation='linear'))
 
     # Compile model
@@ -118,9 +121,11 @@ def new_model():
     while choice not in presets: 
         choice = input(f"\nWhich settings would you like to use?\nChoose from: {presets}\n>>>")
     preset = config[choice]
-    hidden_layer_nodes_list, layer_list, loss_list, optimizer_list, activation_list, epoch_list, seeds, write_score, stop_score = preset["hidden_layer_nodes_list"], preset["layer_list"], preset["loss_list"], preset["optimizer_list"], preset["activation_list"], preset["epoch_list"], preset["seeds"], preset["write_score"], preset["stop_score"]
-    total_tests = len(hidden_layer_nodes_list)*len(loss_list)*len(optimizer_list)*len(activation_list)*len(epoch_list)*len(layer_list)*seeds
-
+    hidden_layer_nodes_list, layer_list, loss_list, optimizer_list, activation_list, epoch_list, seeds, write_score, stop_score, equal_layers = preset["hidden_layer_nodes_list"], preset["layer_list"], preset["loss_list"], preset["optimizer_list"], preset["activation_list"], preset["epoch_list"], preset["seeds"], preset["write_score"], preset["stop_score"], preset["equal_layers"]
+    if equal_layers:
+        total_tests = len(hidden_layer_nodes_list)*len(loss_list)*len(optimizer_list)*len(activation_list)*len(epoch_list)*len(layer_list)*seeds
+    else:
+        total_tests = sum([(len(activation_list)*len(hidden_layer_nodes_list))**layer_nr for layer_nr in layer_list])*len(optimizer_list)*len(epoch_list)*seeds
     print("\nSettings:")
     for k, v in preset.items():
         print(f"\t{k}: {v}")
@@ -137,9 +142,8 @@ def new_model():
         # without having to pass all the variables to a new function.
         def run_all():
             count = 1
-            simple = False
             layers = []
-            if simple == True:
+            if equal_layers == True:
                 for hidden_layer_nodes in hidden_layer_nodes_list:
                     for layer in layer_list:
                         for activation in activation_list:
@@ -150,7 +154,7 @@ def new_model():
                     n_tuples = list(product(*a, repeat=layer))
                     for n_tuple in n_tuples:
                         layers.append(list(chunks(n_tuple,2)))
-            print("LEN:",len(layers))
+            print("Amount of hidden layer setups:",len(layers))
             for layerset in layers:
                 for loss in loss_list:
                     for optimizer in optimizer_list:
@@ -164,13 +168,14 @@ def new_model():
                                 correct = validate_model("temp.h5", cm_choice)
                                 print(f"Test {count} of {total_tests} has an accuracy of {correct}")
                                 if correct >= write_score:
-                                    results.write(f"{layerset},{loss},{optimizer},{epoch},{seed},{layer},{correct}\n")
-                                    print(f"{layerset},{loss},{optimizer},{epoch},{seed},{layer},{correct}\n")
+                                    layerset_s = str(layerset).replace(",",";")
+                                    results.write(f"{layerset_s},{loss},{optimizer},{epoch},{seed},{layer},{correct}\n")
+                                    print(f"{layerset_s},{loss},{optimizer},{epoch},{seed},{layer},{correct}")
                                 count += 1
                                 if correct >= stop_score:
                                     print("The stop score was reached!")
-                                    return
-            print("The stop score was not reached")
+                                    # return
+            print("The stop score was not reached (LIES)")
 
         run_all()    
         print("The last model was saved as temp.h5\nThe results have been written to results.csv")
