@@ -32,7 +32,7 @@ def imgConverter(dir = "informaticaProject"):
   return array, names, diseases
 
 def getDDict():
-  file = open(r"C:\Users\ajare\Dropbox\school\dataScienceProject\imgConverter\imgNamesDiseases.csv")
+  file = open(r"imgNamesDiseases.csv")
   dict = {}
   for rule in file:
     part = rule.split(",")
