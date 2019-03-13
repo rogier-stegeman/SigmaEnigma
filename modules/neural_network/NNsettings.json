@@ -1,0 +1,46 @@
+{
+    "template": {
+        "hidden_layer_nodes_list": [1,2,3],
+        "layer_list": [1,2,3],
+        "loss_list": ["mse", "binary_crossentropy"],
+        "optimizer_list": ["adam", "sgd", "rmsprop"],
+        "activation_list": ["relu", "linear"],
+        "epoch_list": [1,2,3],
+        "seeds": 1,
+        "write_score": 0.80,
+        "stop_score": 0.90
+    },
+    "quick": {
+        "hidden_layer_nodes_list": [108,164],
+        "layer_list": [3],
+        "loss_list": ["mse"],
+        "optimizer_list": ["adam"],
+        "activation_list": ["relu"],
+        "epoch_list": [5],
+        "seeds": 1,
+        "write_score": 0.60,
+        "stop_score": 0.75
+    },
+    "default": {
+        "hidden_layer_nodes_list": [108,164],
+        "layer_list": [3],
+        "loss_list": ["mse"],
+        "optimizer_list": ["adam"],
+        "activation_list": ["relu"],
+        "epoch_list": [15],
+        "seeds": 3,
+        "write_score": 0.75,
+        "stop_score": 1.0
+    },
+    "test": {
+        "hidden_layer_nodes_list": [200,400],
+        "layer_list": [1,2],
+        "loss_list": ["mse"],
+        "optimizer_list": ["adam"],
+        "activation_list": ["relu","linear"],
+        "epoch_list": [15],
+        "seeds": 1,
+        "write_score": 0.75,
+        "stop_score": 1.0
+    }
+}

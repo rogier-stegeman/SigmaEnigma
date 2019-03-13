@@ -1,0 +1,4 @@
+layerset,loss,optimizer,epoch,seed,layer,correct
+[[200, 'relu'], [200, 'relu']],mse,adam,15,1308030074,2,0.7777777777777778
+[[400, 'relu'], [200, 'linear']],mse,adam,15,4247249099,2,0.7777777777777778
+[[400, 'linear'], [400, 'relu']],mse,adam,15,267634593,2,0.7777777777777778
