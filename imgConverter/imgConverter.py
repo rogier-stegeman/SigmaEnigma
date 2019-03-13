@@ -2,7 +2,7 @@ from keras_preprocessing.image import img_to_array
 from keras_preprocessing.image import load_img
 import os
 
-def imgConverter(dir = "informaticaProject"):
+def imgConverter(dir = "[PATH TO MAP WITH IMAGES]"):
   first = True
   array = []
   names = []
@@ -40,4 +40,3 @@ def getDDict():
 
   return dict
 
-x, y, z = imgConverter(r"C:\Users\ajare\Dropbox\school\dataScienceProject\imgConverter")
