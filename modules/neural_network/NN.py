@@ -1,5 +1,6 @@
 from itertools import product
 import json
+import keras.backend as K
 from keras.models import Sequential, load_model
 from keras.layers import Dense
 import random
@@ -16,6 +17,11 @@ from sklearn.metrics import confusion_matrix
 
 # Split train set into train and test
 # Keras' accuracy doesn't make sense, calculate your own accuracy by comparing predicted with desired scores
+
+# Get sigmoid and binarycrossentro[y working with round
+# Learning rate
+# Load function using option 4 and conter with check in lowest level of nested loops
+# Test 4603 of 24768
 
 def base_to_int(base):
     d = {'a': '1', 'c': '2', 'g': '3', 't': '4'}
@@ -44,47 +50,35 @@ def create_model(X, y, layerset, loss, optimizer, epoch, seed):
     print("")
     # Set the seed, instead of using a random one
     numpy.random.seed(seed)
-    print("AA")
     # create model
     model = Sequential()
-    print("BB")
     # Input layer
     model.add(Dense(81, input_dim=81, activation='relu'))
     # Hidden layers
-    print("CC")
     for layer in layerset:
         model.add(Dense(layer[0], activation=layer[1]))
     # Output layer
-    print("DD")
     model.add(Dense(1, activation='linear'))
-    print("EE")
     # Compile model
     model.compile(loss=loss, optimizer=optimizer, metrics=['accuracy'])
-    print("FF")
     # Fit the model
     model.fit(X, y, epochs=epoch, batch_size=20)
-    print("GG")
     return model
 
 
 def evalmodel(X, y, model, cm_choice):
     # evaluate the model
     correctly_identified = 0
-    print("H")
     scores = model.evaluate(X, y)
-    print("I")
     # Print comparison between the first 10 outputs
     # print(y.iloc[:10])
     # print(model.predict(X.iloc[:10]).round(0).astype('int'))
 
     # print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
     correct = y.to_numpy()
-    print("J")
     #correct = correct[:5]
     predicted = model.predict(X)
-    print("K")
     predicted = predicted.round(0).astype('int')
-    print("L")
     # predicted = predicted[:5].round(0).astype('int')
     for row_nr in range(len(correct)):
             # print(correct[row_nr][column_nr],">",predicted[row_nr][column_nr])
@@ -145,7 +139,7 @@ def new_model():
     print("")
     with open("results.csv", "w") as results:
         results.write("layerset,loss,optimizer,epoch,seed,layer,correct\n")
-        X, y = getdata("data/sigma_data_backup2.csv")
+        X, y = getdata("data/sigma_data_backup.csv")
 
         # Defining an inner function to enable breaking all loops with a return statement, 
         # without having to pass all the variables to a new function.
@@ -170,19 +164,18 @@ def new_model():
                         for epoch in epoch_list:
                             for _ in range(seeds):
                                 seed = random.randint(1,(2**32) -1)
-                                print("A")
                                 model = create_model(X, y, layerset, loss, optimizer, epoch, seed)
-                                print("B")
                                 model.save("temp.h5")
-                                print("C")
+                                K.clear_session()
                                 # correct = evalmodel(X, y, model, cm_choice)
                                 # print("old:",correct)
                                 correct = validate_model("temp.h5", cm_choice)
+                                layerset_s = str(layerset).replace(",",";")
+                                options = f"{layerset_s},{loss},{optimizer},{epoch},{seed},{layer},{correct}"
+                                print(options)
                                 print(f"Test {count} of {total_tests} has an accuracy of {correct}")
                                 if correct >= write_score:
-                                    layerset_s = str(layerset).replace(",",";")
-                                    results.write(f"{layerset_s},{loss},{optimizer},{epoch},{seed},{layer},{correct}\n")
-                                    print(f"{layerset_s},{loss},{optimizer},{epoch},{seed},{layer},{correct}")
+                                    results.write(f"{options}\n")
                                 count += 1
                                 if correct >= stop_score:
                                     print("The stop score was reached!")
@@ -194,15 +187,12 @@ def new_model():
 
 
 def validate_model(model_name, cm_choice):
-    print("D")
-    X,y = getdata("data/sigma_data_validation2.csv")
-    print("E")
+    X,y = getdata("data/sigma_data_validation.csv")
     # load model
     model = load_model(f'{model_name}') #BOTTLENECK
-    print("F")
     # evaluate the model
     correct = evalmodel(X, y, model, cm_choice)
-    print("G")
+    K.clear_session()
     return correct
 
 
