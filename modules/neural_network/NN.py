@@ -18,10 +18,10 @@ from sklearn.metrics import confusion_matrix
 # Split train set into train and test
 # Keras' accuracy doesn't make sense, calculate your own accuracy by comparing predicted with desired scores
 
-# Get sigmoid and binarycrossentro[y working with round
+# Fix the fact that layer in write isn't the real layer length but the max layer length, use len(layerlist)
+# Get sigmoid and binarycrossentropy working with round
 # Learning rate
-# Load function using option 4 and conter with check in lowest level of nested loops
-# Test 4603 of 24768
+# Batch size
 
 def base_to_int(base):
     d = {'a': '1', 'c': '2', 'g': '3', 't': '4'}
@@ -115,7 +115,7 @@ def chunks(l, n):
         yield list(l[i:i+n])
 
 
-def new_model():
+def new_model(start_cycle=0):
     # Retrieve settings from a file
     with open('modules/neural_network/NNsettings.json', 'r') as f:
         config = json.load(f)
@@ -124,11 +124,14 @@ def new_model():
     while choice not in presets: 
         choice = input(f"\nWhich settings would you like to use?\nChoose from: {presets}\n>>>")
     preset = config[choice]
-    hidden_layer_nodes_list, layer_list, loss_list, optimizer_list, activation_list, epoch_list, seeds, write_score, stop_score, equal_layers = preset["hidden_layer_nodes_list"], preset["layer_list"], preset["loss_list"], preset["optimizer_list"], preset["activation_list"], preset["epoch_list"], preset["seeds"], preset["write_score"], preset["stop_score"], preset["equal_layers"]
-    if equal_layers:
-        total_tests = len(hidden_layer_nodes_list)*len(loss_list)*len(optimizer_list)*len(activation_list)*len(epoch_list)*len(layer_list)*seeds
-    else:
-        total_tests = sum([(len(activation_list)*len(hidden_layer_nodes_list))**layer_nr for layer_nr in layer_list])*len(optimizer_list)*len(epoch_list)*seeds
+    hidden_layer_nodes_list, layer_list, loss_list, optimizer_list, activation_list, epoch_list, seeds, write_score, stop_score, equal_layers, pre_layers, use_pre = preset["hidden_layer_nodes_list"], preset["layer_list"], preset["loss_list"], preset["optimizer_list"], preset["activation_list"], preset["epoch_list"], preset["seeds"], preset["write_score"], preset["stop_score"], preset["equal_layers"], preset["pre_layers"], preset["use_pre"]
+    if pre_layers:
+        total_tests = len(pre_layers)*len(loss_list)*len(optimizer_list)*len(epoch_list)*seeds
+    else:    
+        if equal_layers:
+            total_tests = len(hidden_layer_nodes_list)*len(loss_list)*len(optimizer_list)*len(activation_list)*len(epoch_list)*len(layer_list)*seeds
+        else:
+            total_tests = sum([(len(activation_list)*len(hidden_layer_nodes_list))**layer_nr for layer_nr in layer_list])*len(optimizer_list)*len(epoch_list)*seeds
     print("\nSettings:")
     for k, v in preset.items():
         print(f"\t{k}: {v}")
@@ -146,40 +149,47 @@ def new_model():
         def run_all():
             count = 1
             layers = []
-            if equal_layers == True:
-                for hidden_layer_nodes in hidden_layer_nodes_list:
-                    for layer in layer_list:
-                        for activation in activation_list:
-                            layers.append([[hidden_layer_nodes,activation]]*layer)
+            if pre_layers:
+                layers = pre_layers
             else:
-                for layer in layer_list:
-                    a = [hidden_layer_nodes_list,activation_list]
-                    n_tuples = list(product(*a, repeat=layer))
-                    for n_tuple in n_tuples:
-                        layers.append(list(chunks(n_tuple,2)))
+                if equal_layers == True:
+                    for hidden_layer_nodes in hidden_layer_nodes_list:
+                        for layer in layer_list:
+                            for activation in activation_list:
+                                layers.append([[hidden_layer_nodes,activation]]*layer)
+                else:
+                    for layer in layer_list:
+                        a = [hidden_layer_nodes_list,activation_list]
+                        n_tuples = list(product(*a, repeat=layer))
+                        for n_tuple in n_tuples:
+                            layers.append(list(chunks(n_tuple,2)))
             print("Amount of hidden layer setups:",len(layers))
             for layerset in layers:
                 for loss in loss_list:
                     for optimizer in optimizer_list:
                         for epoch in epoch_list:
                             for _ in range(seeds):
-                                seed = random.randint(1,(2**32) -1)
-                                model = create_model(X, y, layerset, loss, optimizer, epoch, seed)
-                                model.save("temp.h5")
-                                K.clear_session()
-                                # correct = evalmodel(X, y, model, cm_choice)
-                                # print("old:",correct)
-                                correct = validate_model("temp.h5", cm_choice)
-                                layerset_s = str(layerset).replace(",",";")
-                                options = f"{layerset_s},{loss},{optimizer},{epoch},{seed},{layer},{correct}"
-                                print(options)
-                                print(f"Test {count} of {total_tests} has an accuracy of {correct}")
-                                if correct >= write_score:
-                                    results.write(f"{options}\n")
+                                if count <= start_cycle:
+                                    pass
+                                else:
+                                    seed = random.randint(1,(2**32) -1)
+                                    seed = 3782382748
+                                    model = create_model(X, y, layerset, loss, optimizer, epoch, seed)
+                                    model.save("temp.h5")
+                                    K.clear_session()
+                                    # correct = evalmodel(X, y, model, cm_choice)
+                                    # print("old:",correct)
+                                    correct = validate_model("temp.h5", cm_choice)
+                                    layerset_s = str(layerset).replace(",",";")
+                                    options = f"{layerset_s},{loss},{optimizer},{epoch},{seed},{len(layerset)},{correct}"
+                                    print(options)
+                                    print(f"Test {count} of {total_tests} has an accuracy of {correct}")
+                                    if correct >= write_score:
+                                        results.write(f"{options}\n")
+                                    if correct >= stop_score:
+                                        print("The stop score was reached!")
+                                        # return
                                 count += 1
-                                if correct >= stop_score:
-                                    print("The stop score was reached!")
-                                    # return
             print("The stop score was not reached (LIES)")
 
         run_all()    
@@ -198,10 +208,10 @@ def validate_model(model_name, cm_choice):
 
 def main():
     choice = 0
-    while choice not in ["1","2","3"]:
-        choice = input("Enter your choice:\n1. Run training process\n2. Validate model\n3. Help\n>>>")
+    while choice not in ["1","2","3","4"]:
+        choice = input("Enter your choice:\n1. Run training process\n2. Validate model\n3. Continue with previous training cycle\n4. Help\n>>>")
     if choice == "1":
-        new_model()
+        new_model(start_cycle=0)
     elif choice == "2":
         model_name = input("Enter the model file name (e.g. 'temp.h5'):\n>>>")
         cm_choice = ""
@@ -210,6 +220,9 @@ def main():
         print("")
         correct = validate_model(model_name, cm_choice)
         print("CORRECT%:",correct)
+    elif choice == "3":
+        nr = int(input("Continue at cycle nr?\n>>>")) - 1
+        new_model(start_cycle=nr)
     else:
         print("Sorry, this function is not available yet")
         

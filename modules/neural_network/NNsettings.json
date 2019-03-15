@@ -9,7 +9,9 @@
         "seeds": 2,
         "write_score": 0.80,
         "stop_score": 0.90,
-        "equal_layers": true
+        "equal_layers": true,
+        "pre_layers": [[10, "relu"],[20, "linear"]],
+        "use_pre": false
     },
     "quick": {
         "hidden_layer_nodes_list": [108,164],
@@ -19,8 +21,11 @@
         "activation_list": ["relu"],
         "epoch_list": [5],
         "seeds": 1,
-        "write_score": 0.60,
-        "stop_score": 0.75
+        "write_score": 0.0,
+        "stop_score": 0.75,
+        "equal_layers": true,
+        "pre_layers": [[]],
+        "use_pre": false
     },
     "default": {
         "hidden_layer_nodes_list": [150,200,250],
@@ -32,18 +37,50 @@
         "seeds": 2,
         "write_score": 0.0,
         "stop_score": 1.0,
-        "equal_layers": false
+        "equal_layers": false,
+        "pre_layers": [],
+        "use_pre": false
+    },
+    "check": {
+        "hidden_layer_nodes_list": [200,150],
+        "layer_list": [4],
+        "loss_list": ["mse"],
+        "optimizer_list": ["adam"],
+        "activation_list": ["relu","linear"],
+        "epoch_list": [25],
+        "seeds": 10,
+        "write_score": 0.0,
+        "stop_score": 1.0,
+        "equal_layers": false,
+        "pre_layers": [[]],
+        "use_pre": false
+    },
+    "prelayers": {
+        "hidden_layer_nodes_list": [],
+        "layer_list": [],
+        "loss_list": ["mse"],
+        "optimizer_list": ["adam"],
+        "activation_list": [],
+        "epoch_list": [23,25,27],
+        "seeds": 10,
+        "write_score": 0.0,
+        "stop_score": 1.0,
+        "equal_layers": false,
+        "pre_layers": [[[200, "relu"], [200, "linear"], [150, "relu"], [150, "relu"]],[[200, "relu"], [150, "linear"], [200, "relu"], [200, "linear"]],[[200, "linear"], [200, "linear"], [150, "linear"], [150, "relu"]]],
+        "use_pre": true
     },
     "test": {
-        "hidden_layer_nodes_list": [108],
-        "layer_list": [3],
+        "hidden_layer_nodes_list": [],
+        "layer_list": [],
         "loss_list": ["mse"],
         "optimizer_list": ["rmsprop"],
-        "activation_list": ["relu","linear"],
-        "epoch_list": [13,17,20],
-        "seeds": 2,
-        "write_score": 0.75,
+        "activation_list": [],
+        "epoch_list": [25],
+        "seeds": 1,
+        "write_score": 0.0,
         "stop_score": 1.0,
-        "equal_layers": false
+        "equal_layers": false,
+        "pre_layers": [[[200, "linear"], [150, "relu"], [150, "relu"], [150, "linear"]]],
+        "use_pre": false
     }
 }

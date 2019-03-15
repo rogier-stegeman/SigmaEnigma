@@ -1,4 +1,4 @@
-layerset,loss,optimizer,epoch,seed,layer,correct
+layerset,loss,optimizer,epoch,seed,layer(LAST),correct
 [[108; 'relu']; [108; 'relu']; [108; 'relu']],mse,adam,13,158557188,3,0.6666666666666666
 [[108; 'relu']; [108; 'relu']; [108; 'relu']],mse,adam,20,3067150982,3,0.7254901960784313
 [[108; 'relu']; [108; 'relu']; [108; 'relu']],mse,rmsprop,13,1791193514,3,0.6862745098039216
