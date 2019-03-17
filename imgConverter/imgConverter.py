@@ -38,7 +38,7 @@ def imgConverter(dir = "[PATH TO MAP WITH IMAGES]"):
   return array, names, diseases
 
 def getDDict():
-  file = open(r"dataScienceProject/imgConverter/imgNamesDiseases.csv")
+  file = open(r"imgNamesDiseases.csv")
   dict = {}
   for rule in file:
     part = rule.split(",")
