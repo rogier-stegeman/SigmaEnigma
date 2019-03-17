@@ -27,6 +27,9 @@ for i in pre_y:
     y += [yDict[i]]
 
 yDict = {value: key for key, value in yDict.items()}
+y = np.array(y)
+x = np.array(x)
+x = x.reshape(2,1024,1024,3)
 
 # convert class vectors to binary class matrices
 y = keras.utils.to_categorical(y, num_classes)
@@ -52,6 +55,7 @@ model.fit(x, y,
           epochs=epochs,
           verbose=1,
           validation_data=(x, y))
+
 # score = model.evaluate(x_test, y_test, verbose=0)
 # print('Test loss:', score[0])
 # print('Test accuracy:', score[1])
