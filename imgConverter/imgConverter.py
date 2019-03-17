@@ -24,12 +24,12 @@ def imgConverter(dir = "[PATH TO MAP WITH IMAGES]"):
           first = False
           array = img
         else:
-          array  = np.concatenate([[array],[img]])
+          array  = np.concatenate([array,img])
 
         if len(disease) > 1:
           for i in range(2,len(disease)+1):
-            if regexp.search(disease[i]):
-              array = np.concatenate([[array],[img]])
+            if regexp.search(disease[i-1]):
+              array = np.concatenate([array,img])
               names.append(filename)
               diseases = diseases + [disease[i]]
         else:
@@ -38,7 +38,7 @@ def imgConverter(dir = "[PATH TO MAP WITH IMAGES]"):
   return array, names, diseases
 
 def getDDict():
-  file = open(r"imgNamesDiseases.csv")
+  file = open(r"dataScienceProject/imgConverter/imgNamesDiseases.csv")
   dict = {}
   for rule in file:
     part = rule.split(",")
