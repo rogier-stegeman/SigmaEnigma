@@ -1,5 +1,6 @@
 *.xmsx
 *.csv
+*.h5
 data/*
 modules/getNoneData/data/*
 modules/sequence_feature_start/data/*
