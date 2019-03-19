@@ -3,7 +3,6 @@ import numpy as np
 import openpyxl
 import csv
 import os
-import boxFinder as bF
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import model_selection
 from sklearn.model_selection import cross_validate
@@ -24,7 +23,6 @@ from sklearn.model_selection import learning_curve
 
 
 def main():
-    get_data_excel()
     pandas_df = csv_to_pandad_df()
     X,y = pre_process(pandas_df)
     #print(X)
