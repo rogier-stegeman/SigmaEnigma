@@ -61,12 +61,12 @@
         "loss_list": ["mse"],
         "optimizer_list": ["adam"],
         "activation_list": [],
-        "epoch_list": [23,25,27],
+        "epoch_list": [25],
         "seeds": 10,
         "write_score": 0.0,
         "stop_score": 1.0,
         "equal_layers": false,
-        "pre_layers": [[[200, "relu"], [200, "linear"], [150, "relu"], [150, "relu"]],[[200, "relu"], [150, "linear"], [200, "relu"], [200, "linear"]],[[200, "linear"], [200, "linear"], [150, "linear"], [150, "relu"]]],
+        "pre_layers": [[[150, "relu"], [250, "linear"], [150, "relu"], [150, "relu"]]],
         "use_pre": true
     },
     "test": {

@@ -49,6 +49,7 @@ def getdata(datafile):
 def create_model(X, y, layerset, loss, optimizer, epoch, seed):
     print("")
     # Set the seed, instead of using a random one
+    seed = 3782382748
     numpy.random.seed(seed)
     # create model
     model = Sequential()
