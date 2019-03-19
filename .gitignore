@@ -1,2 +1,6 @@
+*.xmsx
+*.csv
 data/*
 modules/getNoneData/data/*
+modules/sequence_feature_start/data/*
+*pyc
