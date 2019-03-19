@@ -3,7 +3,6 @@ import numpy as np
 import openpyxl
 import csv
 import os
-import boxFinder as bF
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import model_selection
 from sklearn.model_selection import cross_validate
@@ -19,18 +18,16 @@ from sklearn.tree import export_graphviz
 from subprocess import call
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
-import re
-from sklearn.model_selection import learning_curve
 
 
 def main():
     get_data_excel()
     pandas_df = csv_to_pandad_df()
     X,y = pre_process(pandas_df)
-    #print(X)
-   # print(y)
-    models = create_models()
-    test_multiple_models(models, X, y)
+    print(X)
+    print(y)
+    #models = create_models()
+   # test_multiple_models(models, X, y)
 
    # machine_learn(pandas_df)
 
@@ -42,7 +39,7 @@ def get_data_excel():
     df = pd.DataFrame()
     sheet = book["Sheet1"]
     with open('data/sigma_data.csv', 'w') as csvfile:
-        csvfile.write("name,{}sigma,box35,boxExt10,box10,boxDistance\n".format("base,"*81))
+        csvfile.write("name,{}sigma\n".format("base,"*81))
     for row in sheet:
         base_list = []
         sigma_list = []
@@ -53,7 +50,6 @@ def get_data_excel():
             sigma_list = sigma.split(",")
         id = row[0].value
         sequence = row[2].value.lower()
-        boxes = bF.boxFinder(sequence)
         for base in sequence:
             base_list.append(base)
         for sigma in sigma_list:
@@ -65,10 +61,6 @@ def get_data_excel():
                 out_list.append(str(id)+"s"+str(sigma[5:]))
             out_list.extend(base_list)
             out_list.append(str(sigma.strip("\n")))
-            out_list.append(boxes[0])
-            out_list.append(boxes[1])
-            out_list.append(boxes[2])
-            out_list.append(boxes[3])
             write_to_excel(out_list)
 
     book.close()
@@ -102,13 +94,7 @@ def create_models():
              RandomForestClassifier(n_jobs=-1, n_estimators=1800, max_features=0.4, max_depth=46, max_leaf_nodes=40,
                                     min_samples_leaf=0.05, min_samples_split=0.2))
         ]
-        model = [
-            ('RF',
-             RandomForestClassifier(n_jobs=-1, n_estimators=1800, max_features=0.4, max_depth=46, max_leaf_nodes=40,
-                                    min_samples_leaf=0.05, min_samples_split=0.2))
-        ]
-
-        return model
+        return models
 
 def test_multiple_models(models, X, y):
     # test multiple models. Optional function
@@ -124,13 +110,6 @@ def test_multiple_models(models, X, y):
     precicion = []
     cm = []
     for name, model in models:
-        print(name)
-        if name == "RF":
-            model.fit(X, y)
-            curve = plot_learning_curve(model,name,X,y)
-            curve.show()
-            show_tree(model, X, y)
-            feature_selection(model, X)
         kfold = model_selection.KFold(n_splits=4, random_state=seed)
         accuracy_results = model_selection.cross_val_score(model, X, y, cv=kfold, scoring="accuracy")
         F1_results = model_selection.cross_val_score(model, X, y, cv=kfold, scoring="f1")
@@ -138,7 +117,7 @@ def test_multiple_models(models, X, y):
         precicion_results = model_selection.cross_val_score(model, X, y, cv=kfold, scoring="average_precision")
         y_pred = model_selection.cross_val_predict(model, X, y, cv=kfold)
 
-        y2 = y
+        y2 = y.values
         confusion = confusion_matrix(y2, y_pred)
         visualize_confusion_matrix(confusion,name)
         cm.append(confusion)
@@ -162,23 +141,18 @@ def test_multiple_models(models, X, y):
 
 def pre_process(df):
     colsy = [col for col in df.columns if col in ['sigma']]
-    print(colsy)
     colsx = [col for col in df.columns if col not in ['name', 'sigma']]
-    print("he")
     X = df[colsx]
     pre_y = df[colsy]
-    print(X)
-    print(pre_y)
     base_dict = {
         "a": 0,
         "c": 1,
         "g": 2,
         "t": 3
     }
-    for col in X.columns:
-        if not col.startswith("box"):
-            print(col)
-            X[col] = X[col].map(base_dict)
+    for col in  X.columns :
+        print(col)
+        X[col] = X[col].map(base_dict)
 
     label_encoder = LabelEncoder()
     integer_encoded_label = label_encoder.fit_transform(pre_y.values.ravel())
@@ -186,37 +160,7 @@ def pre_process(df):
     y = integer_encoded_label.ravel()
 
 
-
     return X,y
-
-def boxFinder(seq):
-    box10 = findRe(pattern='[TG]A[ACGT]{3}[AT]',seq=seq.upper()[35:60],start=True, add = 35)
-    box35 = findRe(pattern='T[GT]{2}[ACGT]{3}',seq=seq.upper()[:35],start=False)
-    box10Ext = False
-    afstand = 0
-    if not isinstance(box10,bool):
-        box10Ext = findRe(pattern='G[ACTG][TG]A[ACGT]{3}[AT]',seq=seq.upper()[35:60],start=True, add = 35)
-        if not isinstance(box35,bool):
-            if not isinstance(box10Ext,bool):
-                afstand = box10Ext - box35
-            else:
-                afstand = box10 - box35
-
-    return ([not isinstance(box35,bool),
-             not isinstance(box10Ext,bool),
-             not isinstance(box10,bool),
-afstand])
-
-
-def findRe(pattern, seq, start, add = 0):
-    try:
-        x = re.search(pattern,seq)
-        if start:
-            return(x.start()+add)
-        else:
-            return(x.end()+add)
-    except AttributeError as a:
-        return(False)
 
 def machine_learn(df):
     seed = 7
@@ -351,47 +295,19 @@ def visualize_confusion_matrix( cm, name):
 
 def show_tree(model,X,y):
     #Export as dot file
-    print(model)
     estimator = model.estimators_[5]
-
-
     print(list(X.columns))
-#    print(list(y.columns))
+    print(list(y.columns))
     export_graphviz(estimator, out_file='tree.dot',
                 feature_names=list(X.columns),
                 class_names=['none','Sigma70'],
                 rounded=True, proportion=False,
                 precision=2, filled=True)
 
-    os.environ['PATH'] = os.getcwd()+"\\tree.dot"
-    print("hier")
-    print(os.environ['PATH'])
-
 # Convert to png using system command (requires Graphviz)
 
     print(os.getcwd())
-    call(['dot', '-Tpng', 'tree.dot', '-o', 'tree.png'])
-
-def plot_learning_curve(estimator, title, X, y, ylim=None, cv=None, n_jobs=None, train_sizes=np.linspace(.1, 1.0, 5)):
-    plt.figure()
-    plt.title(title)
-    if ylim is not None:
-        plt.ylim(*ylim)
-    plt.xlabel("Training examples")
-    plt.ylabel("Score")
-    train_sizes, train_scores, test_scores = learning_curve(estimator, X, y, cv=cv, n_jobs=n_jobs, train_sizes=train_sizes)
-    train_scores_mean = np.mean(train_scores, axis=1)
-    train_scores_std = np.std(train_scores, axis=1)
-    test_scores_mean = np.mean(test_scores, axis=1)
-    test_scores_std = np.std(test_scores, axis=1)
-    plt.grid()
-
-    plt.fill_between(train_sizes, train_scores_mean - train_scores_std, train_scores_mean + train_scores_std, alpha=0.1, color="r")
-    plt.fill_between(train_sizes, test_scores_mean - test_scores_std, test_scores_mean + test_scores_std, alpha=0.1, color="g")
-    plt.plot(train_sizes, train_scores_mean, 'o-', color="r", label="Training score")
-    plt.plot(train_sizes, test_scores_mean, 'o-', color="g", label="Cross-validation score")
-    plt.legend(loc="best")
-    return plt
+    call(['dot', '-Tpng', 'tree.dot', '-o', 'tree.png', '-Gdpi=600'])
     
 
 if __name__ == "__main__":
