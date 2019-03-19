@@ -27,7 +27,7 @@ def imgConverter(dir = "[PATH TO MAP WITH IMAGES]"):
           array  = np.concatenate([array,img])
 
         if len(disease) > 1:
-          for i in range(2,len(disease)+1):
+          for i in range(1,len(disease)+1):
             if regexp.search(disease[i-1]):
               array = np.concatenate([array,img])
               names.append(filename)
