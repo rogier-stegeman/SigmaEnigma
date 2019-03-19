@@ -1,7 +1,7 @@
 import random
 def main():
-    with open("genes.txt", "r") as genes:
-        with open("nonedata.txt", "w") as nonedata:
+    with open("modules/getNoneData/data/genes.txt", "r") as genes:
+        with open("modules/getNoneData/data/nonedata.txt", "w") as nonedata:
             counter = 0
             for line in genes.readlines():
                 a = line.split("-")
@@ -13,9 +13,9 @@ def main():
                     # if counter <= 1294:
                         l = int(len(seq)/2)
                         if counter % 2 == 0:
-                            nonedata.write(getComplement("".join(reversed(seq[l-40:l+40]))))
+                            nonedata.write(getComplement("".join(reversed(seq[l-40:l+41]))))
                         else:    
-                            nonedata.write(seq[l-40:l+40])
+                            nonedata.write(seq[l-40:l+41])
                         nonedata.write("\n")
 
 def getComplement(seq):
