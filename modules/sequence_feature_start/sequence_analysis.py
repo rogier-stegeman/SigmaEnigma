@@ -3,6 +3,7 @@ import numpy as np
 import openpyxl
 import csv
 import os
+import boxFinder as bF
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import model_selection
 from sklearn.model_selection import cross_validate
@@ -18,65 +19,23 @@ from sklearn.tree import export_graphviz
 from subprocess import call
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
+import re
+from sklearn.model_selection import learning_curve
 
 
 def main():
     get_data_excel()
     pandas_df = csv_to_pandad_df()
     X,y = pre_process(pandas_df)
-    print(X)
-    print(y)
-    #models = create_models()
-   # test_multiple_models(models, X, y)
+    #print(X)
+   # print(y)
+    models = create_models()
+    test_multiple_models(models, X, y)
 
    # machine_learn(pandas_df)
 
 
-
-def get_data_excel():
-    """Load the data from an Excel worksheet"""
-    book = openpyxl.load_workbook('data/datasetWithNoneSigma70.xlsx', data_only=True)
-    df = pd.DataFrame()
-    sheet = book["Sheet1"]
-    with open('data/sigma_data.csv', 'w') as csvfile:
-        csvfile.write("name,{}sigma\n".format("base,"*81))
-    for row in sheet:
-        base_list = []
-        sigma_list = []
-        sigma = row[1].value
-        if sigma is None:
-            sigma_list = ["Not present"]
-        else:
-            sigma_list = sigma.split(",")
-        id = row[0].value
-        sequence = row[2].value.lower()
-        for base in sequence:
-            base_list.append(base)
-        for sigma in sigma_list:
-            sigma = sigma.strip(" ")
-            out_list = []
-            if sigma == "none":
-                out_list.append(str(id)+"s:no")
-            else:
-                out_list.append(str(id)+"s"+str(sigma[5:]))
-            out_list.extend(base_list)
-            out_list.append(str(sigma.strip("\n")))
-            write_to_excel(out_list)
-
-    book.close()
-
-
-def write_to_excel(base_list):
-    """Write processed data to csv file for import
-    into Excel"""
-    with open('data/sigma_data.csv', 'a+') as csvfile:
-        filewriter = csv.writer(csvfile, delimiter=',',
-                                quotechar='|', quoting=csv.QUOTE_MINIMAL, lineterminator="\n")
-        filewriter.writerow(base_list)
-        #csvfile.read(25)
-
-
-def csv_to_pandad_df():
+def csv_to_pandas_df():
     try:
         df = pd.read_csv('data/sigma_data.csv')
         #print(df)
@@ -94,7 +53,13 @@ def create_models():
              RandomForestClassifier(n_jobs=-1, n_estimators=1800, max_features=0.4, max_depth=46, max_leaf_nodes=40,
                                     min_samples_leaf=0.05, min_samples_split=0.2))
         ]
-        return models
+        model = [
+            ('RF',
+             RandomForestClassifier(n_jobs=-1, n_estimators=1800, max_features=0.4, max_depth=46, max_leaf_nodes=40,
+                                    min_samples_leaf=0.05, min_samples_split=0.2))
+        ]
+
+        return model
 
 def test_multiple_models(models, X, y):
     # test multiple models. Optional function
@@ -110,6 +75,13 @@ def test_multiple_models(models, X, y):
     precicion = []
     cm = []
     for name, model in models:
+        print(name)
+        if name == "RF":
+            model.fit(X, y)
+            curve = plot_learning_curve(model,name,X,y)
+            curve.show()
+            show_tree(model, X, y)
+            feature_selection(model, X)
         kfold = model_selection.KFold(n_splits=4, random_state=seed)
         accuracy_results = model_selection.cross_val_score(model, X, y, cv=kfold, scoring="accuracy")
         F1_results = model_selection.cross_val_score(model, X, y, cv=kfold, scoring="f1")
@@ -117,7 +89,7 @@ def test_multiple_models(models, X, y):
         precicion_results = model_selection.cross_val_score(model, X, y, cv=kfold, scoring="average_precision")
         y_pred = model_selection.cross_val_predict(model, X, y, cv=kfold)
 
-        y2 = y.values
+        y2 = y
         confusion = confusion_matrix(y2, y_pred)
         visualize_confusion_matrix(confusion,name)
         cm.append(confusion)
@@ -141,18 +113,23 @@ def test_multiple_models(models, X, y):
 
 def pre_process(df):
     colsy = [col for col in df.columns if col in ['sigma']]
+    print(colsy)
     colsx = [col for col in df.columns if col not in ['name', 'sigma']]
+    print("he")
     X = df[colsx]
     pre_y = df[colsy]
+    print(X)
+    print(pre_y)
     base_dict = {
         "a": 0,
         "c": 1,
         "g": 2,
         "t": 3
     }
-    for col in  X.columns :
-        print(col)
-        X[col] = X[col].map(base_dict)
+    for col in X.columns:
+        if not col.startswith("box"):
+            print(col)
+            X[col] = X[col].map(base_dict)
 
     label_encoder = LabelEncoder()
     integer_encoded_label = label_encoder.fit_transform(pre_y.values.ravel())
@@ -160,92 +137,9 @@ def pre_process(df):
     y = integer_encoded_label.ravel()
 
 
+
     return X,y
 
-def machine_learn(df):
-    seed = 7
-    colsy = [col for col in df.columns if col  in ['sigma']]
-    colsx = [col for col in df.columns if col not in ['name', 'sigma']]
-
-    X = df[colsx]
-    #print( pre_X)
-    pre_y = df[colsy]
-    model = RandomForestClassifier(n_jobs=-1, n_estimators=1800, max_features=0.4, max_depth=46, max_leaf_nodes=40,
-                           min_samples_leaf=0.05, min_samples_split=0.2)
-    #df.set_index('name')
-    base_dict= {
-        "a": 0,
-        "c": 1,
-        "g": 2,
-        "t": 3
-    }
-    for col in  X.columns :
-        print(col)
-        X[col] = X[col].map(base_dict)
-
-
-
-    label_encoder = LabelEncoder()
-    integer_encoded_label = label_encoder.fit_transform( pre_y .values.ravel())
-    integer_encoded_label = integer_encoded_label.reshape(len(integer_encoded_label), 1)
-    y = integer_encoded_label.ravel()
-    #print(integer_encoded_label)
-    '''
-
-    onehot_encoder = OneHotEncoder(sparse=False)
-    integer_encoded_feature = onehot_encoder.fit_transform(pre_X)
-    '''
-    
-    # one hot the sequence
-
-    # reshape because that's what OneHotEncoder likes
-    #integer_encoded_feature = integer_encoded_feature.reshape(len(integer_encoded_feature), 1)
-    #onehot_encoded_seq = onehot_encoder.fit_transform(integer_encoded_feature)
-    #print(  integer_encoded_feature)
-    #X = integer_encoded_feature
-    #print(X)
-
-    #print(X[0,1:])
-    #X =  pd.DataFrame(data=X)
-
-    #print(y)
-
-   # X = shuffle(X)
-    #y = shuffle (y)
-    #print(y)
-
-
-
-    model.fit(X,y)
-    #print(X)
-    #print(pd.DataFrame(X))
-    #print(X.shape)
-    #print(y.shape)
-    #print(type(X))
-    #print(type(y))
-    #print(X)
-    #print(y)
-
-    kfold = model_selection.KFold(n_splits=4, random_state=seed)
-    scoring = {'accuracy':'accuracy',
-               'f1_micro': 'f1_micro',
-               'recall_micro': 'recall_micro',
-               }
-
-    scores = cross_validate(model, X, y, cv=kfold, scoring=scoring,
-                            return_train_score=False)
-    y_pred = model_selection.cross_val_predict(model, X, y, cv=kfold)
-    for k, v in scores.items():
-        print(k, v)
-    y2 = y
-    confusion = confusion_matrix(y2, y_pred)
-    #print(list(X))
-    #print(y)
-
-    name = "randomforestclassifier"
-    #feature_selection(model,X)
-    show_tree(model,X,pre_y)
-    #visualize_confusion_matrix(confusion, name)
 
 def feature_selection(model,X):
     print(type(X))
@@ -295,19 +189,47 @@ def visualize_confusion_matrix( cm, name):
 
 def show_tree(model,X,y):
     #Export as dot file
+    print(model)
     estimator = model.estimators_[5]
+
+
     print(list(X.columns))
-    print(list(y.columns))
+#    print(list(y.columns))
     export_graphviz(estimator, out_file='tree.dot',
                 feature_names=list(X.columns),
                 class_names=['none','Sigma70'],
                 rounded=True, proportion=False,
                 precision=2, filled=True)
 
+    os.environ['PATH'] = os.getcwd()+"\\tree.dot"
+    print("hier")
+    print(os.environ['PATH'])
+
 # Convert to png using system command (requires Graphviz)
 
     print(os.getcwd())
-    call(['dot', '-Tpng', 'tree.dot', '-o', 'tree.png', '-Gdpi=600'])
+    call(['dot', '-Tpng', 'tree.dot', '-o', 'tree.png'])
+
+def plot_learning_curve(estimator, title, X, y, ylim=None, cv=None, n_jobs=None, train_sizes=np.linspace(.1, 1.0, 5)):
+    plt.figure()
+    plt.title(title)
+    if ylim is not None:
+        plt.ylim(*ylim)
+    plt.xlabel("Training examples")
+    plt.ylabel("Score")
+    train_sizes, train_scores, test_scores = learning_curve(estimator, X, y, cv=cv, n_jobs=n_jobs, train_sizes=train_sizes)
+    train_scores_mean = np.mean(train_scores, axis=1)
+    train_scores_std = np.std(train_scores, axis=1)
+    test_scores_mean = np.mean(test_scores, axis=1)
+    test_scores_std = np.std(test_scores, axis=1)
+    plt.grid()
+
+    plt.fill_between(train_sizes, train_scores_mean - train_scores_std, train_scores_mean + train_scores_std, alpha=0.1, color="r")
+    plt.fill_between(train_sizes, test_scores_mean - test_scores_std, test_scores_mean + test_scores_std, alpha=0.1, color="g")
+    plt.plot(train_sizes, train_scores_mean, 'o-', color="r", label="Training score")
+    plt.plot(train_sizes, test_scores_mean, 'o-', color="g", label="Cross-validation score")
+    plt.legend(loc="best")
+    return plt
     
 
 if __name__ == "__main__":
