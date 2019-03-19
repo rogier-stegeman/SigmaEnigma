@@ -20,6 +20,7 @@ from subprocess import call
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 import re
+from sklearn.model_selection import learning_curve
 
 
 def main():
@@ -101,7 +102,13 @@ def create_models():
              RandomForestClassifier(n_jobs=-1, n_estimators=1800, max_features=0.4, max_depth=46, max_leaf_nodes=40,
                                     min_samples_leaf=0.05, min_samples_split=0.2))
         ]
-        return models
+        model = [
+            ('RF',
+             RandomForestClassifier(n_jobs=-1, n_estimators=1800, max_features=0.4, max_depth=46, max_leaf_nodes=40,
+                                    min_samples_leaf=0.05, min_samples_split=0.2))
+        ]
+
+        return model
 
 def test_multiple_models(models, X, y):
     # test multiple models. Optional function
@@ -117,6 +124,13 @@ def test_multiple_models(models, X, y):
     precicion = []
     cm = []
     for name, model in models:
+        print(name)
+        if name == "RF":
+            model.fit(X, y)
+            curve = plot_learning_curve(model,name,X,y)
+            curve.show()
+            show_tree(model, X, y)
+            feature_selection(model, X)
         kfold = model_selection.KFold(n_splits=4, random_state=seed)
         accuracy_results = model_selection.cross_val_score(model, X, y, cv=kfold, scoring="accuracy")
         F1_results = model_selection.cross_val_score(model, X, y, cv=kfold, scoring="f1")
@@ -337,19 +351,47 @@ def visualize_confusion_matrix( cm, name):
 
 def show_tree(model,X,y):
     #Export as dot file
+    print(model)
     estimator = model.estimators_[5]
+
+
     print(list(X.columns))
-    print(list(y.columns))
+#    print(list(y.columns))
     export_graphviz(estimator, out_file='tree.dot',
                 feature_names=list(X.columns),
                 class_names=['none','Sigma70'],
                 rounded=True, proportion=False,
                 precision=2, filled=True)
 
+    os.environ['PATH'] = os.getcwd()+"\\tree.dot"
+    print("hier")
+    print(os.environ['PATH'])
+
 # Convert to png using system command (requires Graphviz)
 
     print(os.getcwd())
-    call(['dot', '-Tpng', 'tree.dot', '-o', 'tree.png', '-Gdpi=600'])
+    call(['dot', '-Tpng', 'tree.dot', '-o', 'tree.png'])
+
+def plot_learning_curve(estimator, title, X, y, ylim=None, cv=None, n_jobs=None, train_sizes=np.linspace(.1, 1.0, 5)):
+    plt.figure()
+    plt.title(title)
+    if ylim is not None:
+        plt.ylim(*ylim)
+    plt.xlabel("Training examples")
+    plt.ylabel("Score")
+    train_sizes, train_scores, test_scores = learning_curve(estimator, X, y, cv=cv, n_jobs=n_jobs, train_sizes=train_sizes)
+    train_scores_mean = np.mean(train_scores, axis=1)
+    train_scores_std = np.std(train_scores, axis=1)
+    test_scores_mean = np.mean(test_scores, axis=1)
+    test_scores_std = np.std(test_scores, axis=1)
+    plt.grid()
+
+    plt.fill_between(train_sizes, train_scores_mean - train_scores_std, train_scores_mean + train_scores_std, alpha=0.1, color="r")
+    plt.fill_between(train_sizes, test_scores_mean - test_scores_std, test_scores_mean + test_scores_std, alpha=0.1, color="g")
+    plt.plot(train_sizes, train_scores_mean, 'o-', color="r", label="Training score")
+    plt.plot(train_sizes, test_scores_mean, 'o-', color="g", label="Cross-validation score")
+    plt.legend(loc="best")
+    return plt
     
 
 if __name__ == "__main__":
