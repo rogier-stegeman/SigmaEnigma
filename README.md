@@ -23,17 +23,18 @@ To do this, it uses the `NNsettings.json` file where you can define your setting
 When starting `NN.py` you can choose one of these presets and the program will create a model
 for every possible combination of settings so you can compare them. The results are saved to `results.csv`. The settings are
 described below:
-| Param | Example | Desc
-| --- | --- | ---
-| hidden_layer_nodes_list | [100,200,300] | Amount of nodes in a layer
-| layer_list | [1,2,3] | Amount of layers
-| loss_list | ["mse", "binary_crossentropy"] | Loss functions
-| optimizer_list | ["adam", "sgd", "rmsprop"] | Optimiser functions
-| activation_list | ["relu", "linear"] | Activation functions
-| epoch_list | [1,2,3] | Amount of epochs
+
+| Param | Example | Desc |
+| --- | --- | --- |
+| hidden_layer_nodes_list | [100,200,300] | Amount of nodes in a layer |
+| layer_list | [1,2,3] | Amount of layers |
+| loss_list | ["mse", "binary_crossentropy"] | Loss functions |
+| optimizer_list | ["adam", "sgd", "rmsprop"] | Optimiser functions |
+| activation_list | ["relu", "linear"] | Activation functions |
+| epoch_list | [1,2,3] | Amount of epochs |
 | seeds | 2 | Amount of seeds to test every combination on
-| write_score | 0.80 | Minimum score for settings to be written to a file
-| stop_score | 0.90 | When this score is reached, the program stops
-| equal_layers | true | Whether all layers should be the same. Enabling this greatly reduces the amount of possibilities. Use when y ou are more interested in the impact of hyperparameters outside of the the hidden layers
-| pre_layers | [[10, "relu"],[20, "linear"]] | You can define the amount of hidden layers, their nodes and activation functions beforehand
+| write_score | 0.80 | Minimum score for settings to be written to a file |
+| stop_score | 0.90 | When this score is reached, the program stops |
+| equal_layers | true | Whether all layers should be the same. Enabling this greatly reduces the amount of possibilities. Use when y ou are more interested in the impact of hyperparameters outside of the the hidden layers |
+| pre_layers | [[10, "relu"],[20, "linear"]] | You can define the amount of hidden layers, their nodes and activation functions beforehand |
 | use_pre | false | Whether to use the predefined layers
