@@ -13,7 +13,9 @@ This module also uses `boxFinder` to retrieve information abuot the three Sigma7
 You can now use the `sequence_feature_start` module to create a decision tree model, or 
 `neural_network` to create a NN.
 
-## Decision Tree
+## Sequence_feature_start
+
+This module contains  1 important script : sequence_analysis. This script analysis sequences en classifies them using machine learning as either a sigma 70 containing sequence or a sequence without sigma 70. The machine learning algoritms used in this script are randomforestclassifier , knn and logistic regression.
 
 
 ## Neural Network
