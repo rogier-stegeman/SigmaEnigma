@@ -7,7 +7,7 @@ import random
 import pandas as pd
 import numpy
 import numpy as np
-from sklearn.preprocessing import OneHotEncoder
+
 # For conf matrix
 import matplotlib
 matplotlib.use('Qt5Agg')
@@ -15,49 +15,55 @@ import matplotlib.pyplot as plt
 from sklearn import model_selection
 from sklearn.metrics import confusion_matrix
 
-# Split train set into train and test
-
-# Get sigmoid and binarycrossentropy working with round
-# Learning rate
-# Batch size
 
 def base_to_int(base):
+    """Convert dna bases to integers"""
     d = {'a': '1', 'c': '2', 'g': '3', 't': '4'}
     return int(d[base])
 
+
 def class_to_int(clss):
+    """Convert sigma classes to integers"""
     d = {'Sigma70': '1', 'none': '2'}
     return int(d[clss])
 
+
 def getdata(datafile):
-    # load dataset
+    """Load the dataset from a csv file."""
+    # Read dataset
     dataset = pd.read_csv(datafile)
+    # Use 0's where values are empty
     dataset = dataset.fillna(0)
-    # split into input (X) and output (Y) variables
+    # Transforms all bases columns to integers
     for col in dataset:
         if "base" in col:
             dataset[col] = dataset[col].apply(base_to_int)
+    # Split into input (X) and output (Y) variables
     X = dataset.iloc[:,1:86]
-    # print(X)
     y = dataset.iloc[:,86] = dataset.iloc[:,86].apply(class_to_int)
-    # print(y)
     return X, y
 
 
 def create_model(X, y, layerset, loss, optimizer, epoch, seed):
+    """Create, compile and fit a new model"""
     print("")
+    # seed = 3782382748
     # Set the seed, instead of using a random one
-    seed = 3782382748
     numpy.random.seed(seed)
-    # create model
+
+    # Instantiate a new model
     model = Sequential()
+
     # Input layer
     model.add(Dense(85, input_dim=85, activation='relu'))
+
     # Hidden layers
     for layer in layerset:
         model.add(Dense(layer[0], activation=layer[1]))
+
     # Output layer
     model.add(Dense(1, activation='linear'))
+
     # Compile model
     model.compile(loss=loss, optimizer=optimizer, metrics=['accuracy'])
     # Fit the model
@@ -66,33 +72,26 @@ def create_model(X, y, layerset, loss, optimizer, epoch, seed):
 
 
 def evalmodel(X, y, model, cm_choice):
-    # evaluate the model
+    """Evaluate the model"""
     correctly_identified = 0
-    scores = model.evaluate(X, y)
-    # Print comparison between the first 10 outputs
-    # print(y.iloc[:10])
-    # print(model.predict(X.iloc[:10]).round(0).astype('int'))
-
-    # print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
     correct = y.to_numpy()
-    #correct = correct[:5]
     predicted = model.predict(X)
     predicted = predicted.round(0).astype('int')
-    # predicted = predicted[:5].round(0).astype('int')
     for row_nr in range(len(correct)):
-            # print(correct[row_nr][column_nr],">",predicted[row_nr][column_nr])
             if correct[row_nr] == predicted[row_nr][0]:
                 correctly_identified += 1
-    print("M")
+    
     if cm_choice.startswith("y"):
-    # Get confusion Matrix
+        # Get confusion Matrix
         y_pred = [l[0] for l in predicted]
         confusion = confusion_matrix(correct, y_pred)
         visualize_confusion_matrix(confusion, "NN")
+    
     return correctly_identified/(len(correct))
 
 
 def visualize_confusion_matrix(cm, name):
+    """Use matplotlib to create a confusion matrix"""
     plt.clf()
     plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Wistia)
     classNames = ['Negative', 'Positive']
@@ -110,6 +109,7 @@ def visualize_confusion_matrix(cm, name):
 
 
 def chunks(l, n):
+    """Returns chunks"""
     for i in range(0, len(l), n):
         yield list(l[i:i+n])
 
@@ -150,6 +150,7 @@ def new_model(start_cycle=0):
             layers = []
             if pre_layers:
                 layers = pre_layers
+            # Create all possible layers
             else:
                 if equal_layers == True:
                     for hidden_layer_nodes in hidden_layer_nodes_list:
@@ -206,11 +207,14 @@ def validate_model(model_name, cm_choice):
 
 
 def main():
+    # Startup menu
     choice = 0
     while choice not in ["1","2","3","4"]:
         choice = input("Enter your choice:\n1. Run training process\n2. Validate model\n3. Continue with previous training cycle\n4. Help\n>>>")
+    
     if choice == "1":
         new_model(start_cycle=0)
+    
     elif choice == "2":
         model_name = input("Enter the model file name (e.g. 'temp.h5'):\n>>>")
         cm_choice = ""
@@ -219,12 +223,13 @@ def main():
         print("")
         correct = validate_model(model_name, cm_choice)
         print("CORRECT%:",correct)
+    
     elif choice == "3":
         nr = int(input("Continue at cycle nr?\n>>>")) - 1
         new_model(start_cycle=nr)
+
     else:
         print("Sorry, this function is not available yet")
-        
 
 
 if __name__ == "__main__":
