@@ -36,9 +36,9 @@ def getdata(datafile):
     for col in dataset:
         if "base" in col:
             dataset[col] = dataset[col].apply(base_to_int)
-    X = dataset.iloc[:,1:82]
+    X = dataset.iloc[:,1:86]
     # print(X)
-    y = dataset.iloc[:,82] = dataset.iloc[:,82].apply(class_to_int)
+    y = dataset.iloc[:,86] = dataset.iloc[:,86].apply(class_to_int)
     # print(y)
     return X, y
 
@@ -46,25 +46,32 @@ def getdata(datafile):
 def create_model(X, y):
     # create model
     seed = random.randint(1,(2**32) -1)
-    print("Seed:", seed)
     numpy.random.seed(seed)
     model = Sequential()
-    model.add(Dense(81, input_dim=81, activation='relu'))
-    model.add(Dense(108, activation='relu', kernel_regularizer=keras.regularizers.l2(0.010)))
+    # model.add(Dense(85, input_dim=85, activation='relu'))
+    # model.add(Dense(108, activation='relu', kernel_regularizer=keras.regularizers.l2(0.010)))
     # model.add(Dropout(0.2))
-    # model.add(Dense(108, activation='linear',kernel_regularizer=keras.regularizers.l2(0.010)))
-    # model.add(Dense(108, activation='relu',kernel_regularizer=keras.regularizers.l2(0.010)))
+    # model.add(Dense(150, activation='linear',kernel_regularizer=keras.regularizers.l2(0.010)))
+    # model.add(Dense(150, activation='relu',kernel_regularizer=keras.regularizers.l2(0.010)))
+    # model.add(Dropout(0.2))
+    # model.add(Dense(108, activation='linear'))
+    model.add(Dense(85, input_dim=85, activation='relu'))
+    model.add(Dense(42, activation='relu', kernel_regularizer=keras.regularizers.l2(0.010)))
+    # model.add(Dropout(0.2))
+    # model.add(Dense(42, activation='linear',kernel_regularizer=keras.regularizers.l2(0.010)))
+    # model.add(Dense(42, activation='relu',kernel_regularizer=keras.regularizers.l2(0.010)))
     model.add(Dropout(0.2))
-    model.add(Dense(108, activation='linear'))
+    model.add(Dense(42, activation='linear', kernel_regularizer=keras.regularizers.l2(0.010)))
     #model.add(Dense(42, activation='relu',c))
-    #model.add(Dropout(0.3))
+    model.add(Dropout(0.2))
     model.add(Dense(1, activation='linear'))
 
     # Compile model
-    model.compile(loss="mse", optimizer="adam", metrics=['accuracy'])
+    adam = keras.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
+    model.compile(loss="mse", optimizer=adam, metrics=['accuracy'])
     # Fit the model
     model.fit(X, y, epochs=30, batch_size=20)
-    return model
+    return model, seed
 
 
 def evalmodel(X, y, model, cm_choice):
@@ -114,27 +121,29 @@ def visualize_confusion_matrix(cm, name):
 
 
 def new_model(cm_choice):
-    with open("results.csv", "w") as results:
-        results.write("hidden_layer_nodes,loss,optimizer,activation,epoch,seed,layer,correct\n")
-        X, y = getdata("data/sigma_data_backup.csv")
+    with open("results_simple.csv", "a+") as results:
+        results.write("seed,correct\n")
+        X, y = getdata("data/sigma_data2.csv")
 
         # Defining an inner function to enable breaking all loops with a return statement, 
         # without having to pass all the variables to a new function.
         
         
-        model = create_model(X, y)
+        model, seed = create_model(X, y)
         model.save("tempsimple.h5")
         K.clear_session()
         # correct = evalmodel(X, y, model, cm_choice)
         # print("old:",correct)
         correct = validate_model("tempsimple.h5", cm_choice)
+        print("Score:", correct)
+        results.write(f"{seed}, {correct}")
         K.clear_session()
         return correct
 
 
 
 def validate_model(model_name, cm_choice):
-    X,y = getdata("data/sigma_data_validation.csv")
+    X,y = getdata("data/sigma_data_test2.csv")
     # load model
     model = load_model(f'{model_name}')
     # evaluate the model
@@ -152,7 +161,11 @@ def main():
             cm_choice = input("\nShow confusion matrices? (Y/N)\n>>>").lower()
         print("")
         corrects = []
-        for i in range(10):
+        try:
+            os.remove("results_simple.csv")
+        except:
+            pass
+        for i in range(5):
             corrects.append(new_model(cm_choice))
         print(f"Test has an accuracy of {corrects} = {mean(corrects)}")
     elif choice == "2":

@@ -28,16 +28,16 @@
         "use_pre": false
     },
     "default": {
-        "hidden_layer_nodes_list": [150,200,250],
+        "hidden_layer_nodes_list": [108,164,250],
         "layer_list": [2,3,4],
         "loss_list": ["mse"],
         "optimizer_list": ["adam","rmsprop"],
         "activation_list": ["relu","linear"],
-        "epoch_list": [10,15,20,25],
+        "epoch_list": [20,25],
         "seeds": 2,
         "write_score": 0.0,
         "stop_score": 1.0,
-        "equal_layers": false,
+        "equal_layers": true,
         "pre_layers": [],
         "use_pre": false
     },
@@ -59,14 +59,19 @@
         "hidden_layer_nodes_list": [],
         "layer_list": [],
         "loss_list": ["mse"],
-        "optimizer_list": ["adam"],
+        "optimizer_list": ["adam","rmsprop"],
         "activation_list": [],
-        "epoch_list": [25],
-        "seeds": 10,
+        "epoch_list": [20,25,30],
+        "seeds": 2,
         "write_score": 0.0,
         "stop_score": 1.0,
         "equal_layers": false,
-        "pre_layers": [[[150, "relu"], [250, "linear"], [150, "relu"], [150, "relu"]]],
+        "pre_layers": [
+            [[150, "relu"], [250, "linear"], [150, "relu"], [150, "relu"]],
+            [[108, "relu"], [250, "linear"], [150, "relu"], [150, "relu"]],
+            [[108, "relu"], [250, "linear"], [150, "relu"]],
+            [[108, "relu"], [108, "linear"], [108, "relu"]]
+        ],
         "use_pre": true
     },
     "test": {

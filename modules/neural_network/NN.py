@@ -16,9 +16,7 @@ from sklearn import model_selection
 from sklearn.metrics import confusion_matrix
 
 # Split train set into train and test
-# Keras' accuracy doesn't make sense, calculate your own accuracy by comparing predicted with desired scores
 
-# Fix the fact that layer in write isn't the real layer length but the max layer length, use len(layerlist)
 # Get sigmoid and binarycrossentropy working with round
 # Learning rate
 # Batch size
@@ -39,9 +37,9 @@ def getdata(datafile):
     for col in dataset:
         if "base" in col:
             dataset[col] = dataset[col].apply(base_to_int)
-    X = dataset.iloc[:,1:82]
+    X = dataset.iloc[:,1:86]
     # print(X)
-    y = dataset.iloc[:,82] = dataset.iloc[:,82].apply(class_to_int)
+    y = dataset.iloc[:,86] = dataset.iloc[:,86].apply(class_to_int)
     # print(y)
     return X, y
 
@@ -54,7 +52,7 @@ def create_model(X, y, layerset, loss, optimizer, epoch, seed):
     # create model
     model = Sequential()
     # Input layer
-    model.add(Dense(81, input_dim=81, activation='relu'))
+    model.add(Dense(85, input_dim=85, activation='relu'))
     # Hidden layers
     for layer in layerset:
         model.add(Dense(layer[0], activation=layer[1]))
@@ -143,7 +141,7 @@ def new_model(start_cycle=0):
     print("")
     with open("results.csv", "w") as results:
         results.write("layerset,loss,optimizer,epoch,seed,layer,correct\n")
-        X, y = getdata("data/sigma_data_backup.csv")
+        X, y = getdata("data/sigma_data2.csv")
 
         # Defining an inner function to enable breaking all loops with a return statement, 
         # without having to pass all the variables to a new function.
@@ -198,7 +196,7 @@ def new_model(start_cycle=0):
 
 
 def validate_model(model_name, cm_choice):
-    X,y = getdata("data/sigma_data_validation.csv")
+    X,y = getdata("data/sigma_data_test2.csv")
     # load model
     model = load_model(f'{model_name}') #BOTTLENECK
     # evaluate the model

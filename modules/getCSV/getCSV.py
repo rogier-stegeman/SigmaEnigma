@@ -19,7 +19,7 @@ def get_data_excel():
         base_headers = ""
         for i in range(1,82):
             base_headers += f"base{i},"
-        csvfile.write("name,{}sigma,box35,boxExt10,box10,boxDistance\n".format(base_headers))
+        csvfile.write("name,{}box35,boxExt10,box10,boxDistance,sigma\n".format(base_headers))
     for row in sheet:
         base_list = []
         sigma_list = []
@@ -41,11 +41,11 @@ def get_data_excel():
             else:
                 out_list.append(str(id)+"s"+str(sigma[5:]))
             out_list.extend(base_list)
-            out_list.append(str(sigma.strip("\n")))
             out_list.append(boxes[0])
             out_list.append(boxes[1])
             out_list.append(boxes[2])
             out_list.append(boxes[3])
+            out_list.append(str(sigma.strip("\n")))
             write_to_excel(out_list)
 
     book.close()
