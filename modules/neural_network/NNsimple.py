@@ -8,7 +8,6 @@ import random
 import pandas as pd
 import numpy
 import numpy as np
-from sklearn.preprocessing import OneHotEncoder
 # For conf matrix
 import matplotlib
 matplotlib.use('Qt5Agg')
@@ -36,59 +35,56 @@ def getdata(datafile):
     for col in dataset:
         if "base" in col:
             dataset[col] = dataset[col].apply(base_to_int)
-    X = dataset.iloc[:,1:82]
+    X = dataset.iloc[:,1:86]
     # print(X)
-    y = dataset.iloc[:,82] = dataset.iloc[:,82].apply(class_to_int)
+    y = dataset.iloc[:,86] = dataset.iloc[:,86].apply(class_to_int)
     # print(y)
     return X, y
 
 
 def create_model(X, y):
-    # create model
-    seed = random.randint(1,(2**32) -1)
-    print("Seed:", seed)
+    """Create, compile and fit a new model"""
+    # seed = random.randint(1,(2**32) -1)
+    seed = 1406740558
+    # Set the seed, instead of using a random one
     numpy.random.seed(seed)
+
+    # Instantiate a new model
     model = Sequential()
-    model.add(Dense(81, input_dim=81, activation='relu'))
-    model.add(Dense(108, activation='relu', kernel_regularizer=keras.regularizers.l2(0.010)))
-    # model.add(Dropout(0.2))
-    # model.add(Dense(108, activation='linear',kernel_regularizer=keras.regularizers.l2(0.010)))
-    # model.add(Dense(108, activation='relu',kernel_regularizer=keras.regularizers.l2(0.010)))
+
+    # Input layer
+    model.add(Dense(85, input_dim=85, activation='relu'))
+    
+    # Hidden layers
+    model.add(Dense(42, activation='relu', kernel_regularizer=keras.regularizers.l2(0.010)))
     model.add(Dropout(0.2))
-    model.add(Dense(108, activation='linear'))
-    #model.add(Dense(42, activation='relu',c))
-    #model.add(Dropout(0.3))
+    model.add(Dense(42, activation='linear', kernel_regularizer=keras.regularizers.l2(0.010)))
+    model.add(Dropout(0.2))
+
+    # Ouput layer
     model.add(Dense(1, activation='linear'))
 
     # Compile model
-    model.compile(loss="mse", optimizer="adam", metrics=['accuracy'])
+    adam = keras.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, decay=0.0, amsgrad=False)
+    model.compile(loss="mse", optimizer=adam, metrics=['accuracy'])
     # Fit the model
-    model.fit(X, y, epochs=30, batch_size=20)
-    return model
+    model.fit(X, y, epochs=35, batch_size=20)
+    return model, seed
 
 
 def evalmodel(X, y, model, cm_choice):
-    # evaluate the model
+    """Get the accuracy"""
     correctly_identified = 0
     scores = model.evaluate(X, y)
-
-    # Print comparison between the first 10 outputs
-    # print(y.iloc[:10])
-    # print(model.predict(X.iloc[:10]).round(0).astype('int'))
-
-    # print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
     correct = y.to_numpy()
-    #correct = correct[:5]
     predicted = model.predict(X)
     predicted = predicted.round(0).astype('int')
-    # predicted = predicted[:5].round(0).astype('int')
     for row_nr in range(len(correct)):
-            # print(correct[row_nr][column_nr],">",predicted[row_nr][column_nr])
             if correct[row_nr] == predicted[row_nr][0]:
                 correctly_identified += 1
     
     if cm_choice.startswith("y"):
-    # Get confusion Matrix
+        # Get confusion Matrix
         y_pred = [l[0] for l in predicted]
         confusion = confusion_matrix(correct, y_pred)
         visualize_confusion_matrix(confusion, "NN")
@@ -96,6 +92,7 @@ def evalmodel(X, y, model, cm_choice):
 
 
 def visualize_confusion_matrix(cm, name):
+    """Use matplotlib to create a confusion matrix"""
     plt.clf()
     plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Wistia)
     classNames = ['Negative', 'Positive']
@@ -114,27 +111,24 @@ def visualize_confusion_matrix(cm, name):
 
 
 def new_model(cm_choice):
-    with open("results.csv", "w") as results:
-        results.write("hidden_layer_nodes,loss,optimizer,activation,epoch,seed,layer,correct\n")
-        X, y = getdata("data/sigma_data_backup.csv")
-
-        # Defining an inner function to enable breaking all loops with a return statement, 
-        # without having to pass all the variables to a new function.
-        
-        
-        model = create_model(X, y)
+    """Create a new model"""
+    with open("results_simple.csv", "a+") as results:
+        results.write("seed,correct\n")
+        X, y = getdata("data/sigma_data2.csv")
+        model, seed = create_model(X, y)
         model.save("tempsimple.h5")
         K.clear_session()
-        # correct = evalmodel(X, y, model, cm_choice)
-        # print("old:",correct)
         correct = validate_model("tempsimple.h5", cm_choice)
+        print("Score:", correct)
+        results.write(f"{seed}, {correct}")
         K.clear_session()
         return correct
 
 
 
 def validate_model(model_name, cm_choice):
-    X,y = getdata("data/sigma_data_validation.csv")
+    """Evaluate the model"""
+    X,y = getdata("data/sigma_data_test2.csv")
     # load model
     model = load_model(f'{model_name}')
     # evaluate the model
@@ -143,18 +137,25 @@ def validate_model(model_name, cm_choice):
 
 
 def main():
+    # Startup menu
     choice = 0
     while choice not in ["1","2","3"]:
         choice = input("Enter your choice:\n1. Run training process\n2. Validate model\n3. Help\n>>>")
+
     if choice == "1":
         cm_choice = ""
         while not cm_choice.startswith(("y", "n")):
             cm_choice = input("\nShow confusion matrices? (Y/N)\n>>>").lower()
         print("")
         corrects = []
-        for i in range(10):
+        try:
+            os.remove("results_simple.csv")
+        except:
+            pass
+        for i in range(5):
             corrects.append(new_model(cm_choice))
         print(f"Test has an accuracy of {corrects} = {mean(corrects)}")
+
     elif choice == "2":
         model_name = input("Enter the model file name (e.g. 'temp.h5'):\n>>>")
         cm_choice = ""
@@ -163,6 +164,7 @@ def main():
         print("")
         correct = validate_model(model_name, cm_choice)
         print("CORRECT%:",correct)
+
     else:
         print("Sorry, this function is not available yet")
         
