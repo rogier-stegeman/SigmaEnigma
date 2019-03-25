@@ -15,7 +15,7 @@ You can now use the `sequence_feature_start` module to create a decision tree mo
 
 ## Sequence_feature_start
 
-This module contains  1 important script : sequence_analysis. This script analysis sequences en classifies them using machine learning as either a sigma 70 containing sequence or a sequence without sigma 70. The machine learning algoritms used in this script are randomforestclassifier , knn and logistic regression.
+This module contains one important script: `sequence_analysis`. This script analysis sequences en classifies them using machine learning as either a Sigma70 containing sequence or a sequence without Sigma70. The machine learning algorithms used in this script are randomforestclassifier, knn and logistic regression.
 
 
 ## Neural Network
@@ -37,6 +37,6 @@ described below:
 | seeds | 2 | Amount of seeds to test every combination on
 | write_score | 0.80 | Minimum score for settings to be written to a file |
 | stop_score | 0.90 | When this score is reached, the program stops |
-| equal_layers | true | Whether all layers should be the same. Enabling this greatly reduces the amount of possibilities. Use when y ou are more interested in the impact of hyperparameters outside of the the hidden layers |
+| equal_layers | true | Whether all layers should be the same. Enabling this greatly reduces the amount of possibilities. Use when you are more interested in the impact of hyperparameters outside of the the hidden layers |
 | pre_layers | [[10, "relu"],[20, "linear"]] | You can define the amount of hidden layers, their nodes and activation functions beforehand |
 | use_pre | false | Whether to use the predefined layers
