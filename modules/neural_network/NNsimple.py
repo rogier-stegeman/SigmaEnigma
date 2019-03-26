@@ -56,10 +56,10 @@ def create_model(X, y):
     model.add(Dense(85, input_dim=85, activation='relu'))
     
     # Hidden layers
-    model.add(Dense(42, activation='relu', kernel_regularizer=keras.regularizers.l2(0.010)))
-    model.add(Dropout(0.2))
-    model.add(Dense(42, activation='linear', kernel_regularizer=keras.regularizers.l2(0.010)))
-    model.add(Dropout(0.2))
+    model.add(Dense(42, activation='relu', kernel_regularizer=keras.regularizers.l2(0.042)))
+    model.add(Dropout(0.42))
+    model.add(Dense(42, activation='linear', kernel_regularizer=keras.regularizers.l2(0.042)))
+    model.add(Dropout(0.42))
 
     # Ouput layer
     model.add(Dense(1, activation='linear'))

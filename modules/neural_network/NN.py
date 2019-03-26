@@ -124,7 +124,7 @@ def new_model(start_cycle=0):
         choice = input(f"\nWhich settings would you like to use?\nChoose from: {presets}\n>>>")
     preset = config[choice]
     hidden_layer_nodes_list, layer_list, loss_list, optimizer_list, activation_list, epoch_list, seeds, write_score, stop_score, equal_layers, pre_layers, use_pre = preset["hidden_layer_nodes_list"], preset["layer_list"], preset["loss_list"], preset["optimizer_list"], preset["activation_list"], preset["epoch_list"], preset["seeds"], preset["write_score"], preset["stop_score"], preset["equal_layers"], preset["pre_layers"], preset["use_pre"]
-    if pre_layers:
+    if use_pre:
         total_tests = len(pre_layers)*len(loss_list)*len(optimizer_list)*len(epoch_list)*seeds
     else:    
         if equal_layers:
@@ -148,7 +148,7 @@ def new_model(start_cycle=0):
         def run_all():
             count = 1
             layers = []
-            if pre_layers:
+            if use_pre:
                 layers = pre_layers
             # Create all possible layers
             else:
@@ -156,14 +156,15 @@ def new_model(start_cycle=0):
                     for hidden_layer_nodes in hidden_layer_nodes_list:
                         for layer in layer_list:
                             for activation in activation_list:
-                                layers.append([[hidden_layer_nodes,activation]]*layer)
+                                layers.append([[hidden_layer_nodes, activation]]*layer)
                 else:
                     for layer in layer_list:
-                        a = [hidden_layer_nodes_list,activation_list]
+                        a = [hidden_layer_nodes_list, activation_list]
                         n_tuples = list(product(*a, repeat=layer))
                         for n_tuple in n_tuples:
                             layers.append(list(chunks(n_tuple,2)))
             print("Amount of hidden layer setups:",len(layers))
+            print(layers)
             for layerset in layers:
                 for loss in loss_list:
                     for optimizer in optimizer_list:
@@ -173,7 +174,7 @@ def new_model(start_cycle=0):
                                     pass
                                 else:
                                     seed = random.randint(1,(2**32) -1)
-                                    seed = 3782382748
+                                    # seed = 3782382748
                                     model = create_model(X, y, layerset, loss, optimizer, epoch, seed)
                                     model.save("temp.h5")
                                     K.clear_session()

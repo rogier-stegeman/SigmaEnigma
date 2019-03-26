@@ -5,11 +5,11 @@
         "loss_list": ["mse", "binary_crossentropy"],
         "optimizer_list": ["adam", "sgd", "rmsprop"],
         "activation_list": ["relu", "linear"],
-        "epoch_list": [1,2,3],
+        "epoch_list": [3,4,5],
         "seeds": 2,
         "write_score": 0.80,
         "stop_score": 0.90,
-        "equal_layers": true,
+        "equal_layers": false,
         "pre_layers": [[10, "relu"],[20, "linear"]],
         "use_pre": false
     },
@@ -37,7 +37,7 @@
         "seeds": 2,
         "write_score": 0.0,
         "stop_score": 1.0,
-        "equal_layers": true,
+        "equal_layers": false,
         "pre_layers": [],
         "use_pre": false
     },
