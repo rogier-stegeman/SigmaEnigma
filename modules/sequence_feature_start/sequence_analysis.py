@@ -15,8 +15,12 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import learning_curve
+from sklearn.model_selection import learning_curve,train_test_split
 from sklearn.utils import shuffle
+import os
+from sklearn.tree import export_graphviz
+from sklearn.metrics import roc_curve
+import sklearn.metrics as metrics
 pd.options.mode.chained_assignment = None
 
 # De verschillende functies die nodig zijn om een bestand met sequenties te analyseren wordt hier aangeroepen.
@@ -24,8 +28,8 @@ def main():
     pandas_df = csv_to_pandas_df()
     X,y = pre_process(pandas_df)
     models = create_models()
-    #machine_learn_only(models, X, y)
     test_multiple_models(models, X, y)
+    machine_learn_only(models, X, y)
 
 # leest een csv bestand in en zit het om in een pandas dataframe
 def csv_to_pandas_df():
@@ -74,6 +78,8 @@ def test_multiple_models(models, X, y):
         print(name)
         model.fit(X, y)
         if name == "RF":
+            roc_curve(model, X, y)
+            show_tree(model, X, y)
             feature_selection(model, X)
             curve = plot_learning_curve(model, name, X, y)
             curve.show()
@@ -212,7 +218,41 @@ def plot_learning_curve(estimator, title, X, y, ylim=None, cv=None, n_jobs=None,
     plt.plot(train_sizes, test_scores_mean, 'o-', color="g", label="Cross-validation score")
     plt.legend(loc="best")
     return plt
-    
+
+def show_tree(model,X,y):
+    #Export as dot file
+    estimator = model.estimators_[5]
+
+    export_graphviz(estimator, out_file='tree.dot',
+                feature_names=list(X.columns),
+                class_names=['none','Sigma70'],
+                rounded=True, proportion=False,
+                precision=2, filled=True)
+
+    os.environ['PATH'] = os.getcwd()+"\\tree.dot"
+
+
+# Maakt een roc curve voor een model.
+def roc_curve(model,X,y):
+    # shuffle and split training and test sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.2,
+                                                        random_state=0)
+
+    probs = model.predict_proba(X_test)
+    preds = probs[:, 1]
+    fpr, tpr, threshold = metrics.roc_curve(y_test, preds)
+    roc_auc = metrics.auc(fpr, tpr)
+
+    plt.title('Receiver Operating Characteristic')
+    plt.plot(fpr, tpr, 'b', label='AUC = %0.2f' % roc_auc)
+    plt.legend(loc='lower right')
+    plt.plot([0, 1], [0, 1], 'r--')
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.ylabel('True Positive Rate')
+    plt.xlabel('False Positive Rate')
+    plt.show()
+
 
 if __name__ == "__main__":
     main()
